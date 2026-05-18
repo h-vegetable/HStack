@@ -1,0 +1,20 @@
+{
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back"
+  },
+  "nav": {
+    "home": "Home",
+    "portal": "Portal",
+    "mock": "Mock",
+    "houseHunting": "House Hunting",
+    "componentHub": "Component Hub",
+    "login": "Sign In",
+    "logout": "Sign Out"
+  }
+}

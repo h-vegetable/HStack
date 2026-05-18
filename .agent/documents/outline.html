@@ -1,0 +1,1888 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HStack - 项目结构大纲</title>
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #242836;
+        --border: #2e3347;
+        --text: #e4e7f1;
+        --text-dim: #8b90a5;
+        --accent: #6c5ce7;
+        --accent2: #00cec9;
+        --green: #00b894;
+        --orange: #fdcb6e;
+        --pink: #fd79a8;
+        --blue: #74b9ff;
+        --red: #ff7675;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        padding: 40px 20px;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      /* ====== Header ====== */
+      .header {
+        text-align: center;
+        margin-bottom: 50px;
+        padding-bottom: 40px;
+        border-bottom: 1px solid var(--border);
+      }
+      .header h1 {
+        font-size: 2.6rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+      }
+      .header p {
+        color: var(--text-dim);
+        font-size: 1.05rem;
+      }
+      .tech-badges {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border: 1px solid var(--border);
+        background: var(--surface);
+      }
+      .badge.purple {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .badge.cyan {
+        color: var(--accent2);
+        border-color: var(--accent2);
+      }
+      .badge.green {
+        color: var(--green);
+        border-color: var(--green);
+      }
+      .badge.orange {
+        color: var(--orange);
+        border-color: var(--orange);
+      }
+      .badge.pink {
+        color: var(--pink);
+        border-color: var(--pink);
+      }
+      .badge.blue {
+        color: var(--blue);
+        border-color: var(--blue);
+      }
+
+      /* ====== Section ====== */
+      .section {
+        margin-bottom: 48px;
+      }
+      .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        padding-left: 14px;
+        border-left: 4px solid var(--accent);
+      }
+      .section-title.cyan {
+        border-left-color: var(--accent2);
+      }
+      .section-title.green {
+        border-left-color: var(--green);
+      }
+      .section-title.orange {
+        border-left-color: var(--orange);
+      }
+
+      /* ====== Tree ====== */
+      .tree {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px 28px;
+        overflow-x: auto;
+      }
+      .tree-line {
+        white-space: pre;
+        font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+        font-size: 0.88rem;
+        line-height: 2;
+      }
+      .tree-line .dir {
+        color: var(--accent2);
+        font-weight: 600;
+      }
+      .tree-line .file {
+        color: var(--text);
+      }
+      .tree-line .conn {
+        color: var(--border);
+      }
+      .tree-line .comment {
+        color: var(--text-dim);
+        font-style: italic;
+        font-size: 0.82rem;
+      }
+
+      /* ====== Card Grid ====== */
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 22px;
+        transition:
+          border-color 0.2s,
+          transform 0.2s;
+      }
+      .card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+      }
+      .card .card-path {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-size: 0.88rem;
+        color: var(--accent2);
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .card .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .card .card-desc {
+        font-size: 0.88rem;
+        color: var(--text-dim);
+        line-height: 1.6;
+      }
+      .card .card-tags {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .card .card-tags span {
+        font-size: 0.72rem;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: var(--surface2);
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+      }
+
+      /* ====== Auth Discussion ====== */
+      .discussion {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 28px 30px;
+      }
+      .discussion h3 {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+        color: var(--orange);
+      }
+      .option {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px 22px;
+        margin-bottom: 14px;
+      }
+      .option .opt-label {
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .option .opt-label.plan-a {
+        color: var(--green);
+      }
+      .option .opt-label.plan-b {
+        color: var(--pink);
+      }
+      .option .opt-desc {
+        font-size: 0.9rem;
+        color: var(--text-dim);
+        line-height: 1.7;
+      }
+      .option .opt-desc strong {
+        color: var(--text);
+      }
+      .recommend {
+        margin-top: 18px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        background: rgba(108, 92, 231, 0.1);
+        border: 1px dashed var(--accent);
+        font-size: 0.9rem;
+        line-height: 1.7;
+      }
+      .recommend strong {
+        color: var(--accent);
+      }
+
+      .confirmed {
+        margin-top: 18px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        background: rgba(0, 184, 148, 0.1);
+        border: 1px solid var(--green);
+        font-size: 0.9rem;
+        line-height: 1.7;
+      }
+      .confirmed strong {
+        color: var(--green);
+      }
+
+      /* ====== Comparison Table ====== */
+      .compare-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        margin: 16px 0;
+      }
+      .compare-table th,
+      .compare-table td {
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      .compare-table th {
+        color: var(--text-dim);
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: var(--surface2);
+      }
+      .compare-table td {
+        color: var(--text);
+      }
+      .compare-table tr:hover td {
+        background: rgba(108, 92, 231, 0.04);
+      }
+      .compare-table .tag-yes {
+        color: var(--green);
+        font-weight: 600;
+      }
+      .compare-table .tag-no {
+        color: var(--red);
+        font-weight: 600;
+      }
+      .compare-table .tag-mid {
+        color: var(--orange);
+        font-weight: 600;
+      }
+      .compare-table .chosen {
+        background: rgba(0, 184, 148, 0.08);
+      }
+      .compare-table .chosen td:first-child {
+        position: relative;
+      }
+      .compare-table .chosen td:first-child::before {
+        content: '✓';
+        position: absolute;
+        left: -2px;
+        color: var(--green);
+        font-weight: 700;
+      }
+
+      .analysis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 12px;
+        margin: 16px 0;
+      }
+      .analysis-card {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+      }
+      .analysis-card .ac-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+      }
+      .analysis-card .ac-title.good {
+        color: var(--green);
+      }
+      .analysis-card .ac-title.warn {
+        color: var(--orange);
+      }
+      .analysis-card .ac-title.bad {
+        color: var(--red);
+      }
+      .analysis-card .ac-desc {
+        font-size: 0.82rem;
+        color: var(--text-dim);
+        line-height: 1.6;
+      }
+
+      /* ====== Architecture Diagram ====== */
+      .arch-diagram {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        overflow-x: auto;
+      }
+      .arch-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      .arch-box {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 2px solid;
+        min-width: 120px;
+        text-align: center;
+      }
+      .arch-box.host {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(108, 92, 231, 0.08);
+      }
+      .arch-box.sub {
+        border-color: var(--accent2);
+        color: var(--accent2);
+        background: rgba(0, 206, 201, 0.08);
+      }
+      .arch-box.backend {
+        border-color: var(--green);
+        color: var(--green);
+        background: rgba(0, 184, 148, 0.08);
+      }
+      .arch-box.shared {
+        border-color: var(--orange);
+        color: var(--orange);
+        background: rgba(253, 203, 110, 0.08);
+      }
+      .arch-box.infra {
+        border-color: var(--pink);
+        color: var(--pink);
+        background: rgba(253, 121, 168, 0.08);
+      }
+      .arch-label {
+        font-size: 0.78rem;
+        color: var(--text-dim);
+        margin-bottom: 10px;
+      }
+
+      /* ====== Footer ====== */
+      .footer {
+        text-align: center;
+        margin-top: 60px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+        color: var(--text-dim);
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- ====== Header ====== -->
+      <div class="header">
+        <h1>HStack</h1>
+        <p>Personal Tech Platform & Portfolio</p>
+        <div class="tech-badges">
+          <span class="badge purple">pnpm Monorepo</span>
+          <span class="badge cyan">React</span>
+          <span class="badge green">NestJS</span>
+          <span class="badge orange">TailwindCSS</span>
+          <span class="badge pink">HeroUI</span>
+          <span class="badge blue">micro-app</span>
+          <span class="badge purple">Zustand</span>
+          <span class="badge green">PostgreSQL</span>
+          <span class="badge cyan">i18next</span>
+          <span class="badge pink">Sentry</span>
+        </div>
+      </div>
+
+      <!-- ====== 架构概览 ====== -->
+      <div class="section">
+        <div class="section-title cyan">架构概览</div>
+        <div class="arch-diagram">
+          <div class="arch-label">前端子应用层</div>
+          <div class="arch-row">
+            <div class="arch-box host">Main App<br /><small>micro-app 基座</small></div>
+          </div>
+          <div class="arch-row">
+            <div class="arch-box sub">Portal<br /><small>管控中心</small></div>
+            <div class="arch-box sub">Mock<br /><small>Mock 平台</small></div>
+            <div class="arch-box sub">House<br /><small>看房日志</small></div>
+            <div class="arch-box sub">Components<br /><small>组件中心</small></div>
+          </div>
+          <div style="margin: 14px 0; color: var(--text-dim); font-size: 0.8rem">
+            &#9660; 依赖 &#9660;
+          </div>
+          <div class="arch-label">共享层 (packages)</div>
+          <div class="arch-row">
+            <div class="arch-box shared">shared-ui</div>
+            <div class="arch-box shared">shared-auth</div>
+            <div class="arch-box shared">shared-utils</div>
+            <div class="arch-box shared">shared-types</div>
+            <div class="arch-box shared">shared-styles</div>
+            <div class="arch-box shared">shared-i18n</div>
+          </div>
+          <div style="margin: 14px 0; color: var(--text-dim); font-size: 0.8rem">
+            &#9660; 调用 &#9660;
+          </div>
+          <div class="arch-label">后端服务层</div>
+          <div class="arch-row">
+            <div class="arch-box backend">API Server (NestJS + TypeORM + PostgreSQL)</div>
+          </div>
+          <div style="margin: 14px 0; color: var(--text-dim); font-size: 0.8rem">
+            &#9660; 部署 &#9660;
+          </div>
+          <div class="arch-label">基础设施层</div>
+          <div class="arch-row">
+            <div class="arch-box infra">Docker</div>
+            <div class="arch-box infra">CI / CD</div>
+            <div class="arch-box infra">Nginx</div>
+            <div class="arch-box infra">Sentry</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 完整目录树 ====== -->
+      <div class="section">
+        <div class="section-title">完整目录结构</div>
+        <div class="tree">
+          <div class="tree-line">
+            <span class="dir">HStack/</span> <span class="comment"> # 项目根目录</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">pnpm-workspace.yaml</span>
+            <span class="comment"> # pnpm monorepo 工作区配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">turbo.json</span>
+            <span class="comment"> # Turborepo 构建流水线配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">package.json</span>
+            <span class="comment"> # 根 package.json (workspace 脚本)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">.gitignore</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">tsconfig.base.json</span>
+            <span class="comment"> # 共享 TypeScript 基础配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">.eslintrc.base.js</span>
+            <span class="comment"> # 共享 ESLint 基础配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">.prettierrc</span>
+            <span class="comment"> # 共享 Prettier 配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">.lintstagedrc.json</span>
+            <span class="comment"> # lint-staged 规则</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">commitlint.config.cjs</span>
+            <span class="comment"> # 提交信息规范</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="dir">.husky/</span>
+            <span class="comment"> # Git 钩子 (pre-commit / commit-msg)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="dir">.changeset/</span>
+            <span class="comment"> # Changesets 版本管理</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">.env.example</span>
+            <span class="comment"> # 根环境变量模板</span>
+          </div>
+          <div class="tree-line"><span class="conn">│</span></div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="dir">apps/</span>
+            <span class="comment"> # ====== 应用层 ======</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">main-app/</span>
+            <span class="comment"> # micro-app 基座/主应用</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
+            <span class="comment"> # Vite 构建 + @micro-app/vite-plugin</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">tsconfig.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">public/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">main.tsx</span>
+            <span class="comment"> # 应用入口</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
+            <span class="comment"> # 根组件 + 路由 + micro-app 注册</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">layouts/</span>
+            <span class="comment"> # 全局布局 (Header/Sidebar/Footer)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">router/</span>
+            <span class="comment"> # 路由配置 + 子应用挂载点</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">stores/</span>
+            <span class="comment"> # 全局状态 (用户信息/主题等)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">hooks/</span>
+            <span class="comment"> # 全局通用 hooks</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">styles/</span>
+            <span class="comment"> # 全局样式 + Tailwind 入口</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">portal/</span>
+            <span class="comment"> # 管控中心子应用</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">bootstrap.tsx</span>
+            <span class="comment"> # micro-app 子应用引导入口</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">pages/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ ├── </span><span class="dir">dashboard/</span>
+            <span class="comment"> # 门户首页/应用入口导航</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ ├── </span><span class="dir">changelog/</span>
+            <span class="comment"> # 更新日志</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ └── </span><span class="dir">stats/</span>
+            <span class="comment"> # 指标统计/数据看板</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
+            <span class="comment"> # 管控中心专属组件</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">stores/</span>
+            <span class="comment"> # 管控中心局部状态</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">mock-platform/</span>
+            <span class="comment"> # Mock 平台子应用</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">bootstrap.tsx</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">pages/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ ├── </span><span class="dir">project-list/</span>
+            <span class="comment"> # 项目/接口列表</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ ├── </span><span class="dir">doc-import/</span>
+            <span class="comment"> # 文档导入 (Swagger/MD)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ ├── </span><span class="dir">mock-editor/</span>
+            <span class="comment"> # Mock 数据编辑/预览</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ └── </span><span class="dir">mock-download/</span>
+            <span class="comment"> # 离线 Mock 文件下载</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">stores/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">parser/</span>
+            <span class="comment"> # Swagger/MD 解析引擎</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">house-hunting/</span>
+            <span class="comment"> # 看房日志子应用</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">bootstrap.tsx</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">pages/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ ├── </span><span class="dir">log-list/</span>
+            <span class="comment"> # 看房记录列表</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ ├── </span><span class="dir">log-detail/</span>
+            <span class="comment"> # 看房详情/评分</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ └── </span><span class="dir">statistics/</span>
+            <span class="comment"> # 看房统计/对比</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">stores/</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">component-hub/</span>
+            <span class="comment"> # 组件中心子应用</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">bootstrap.tsx</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">pages/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ ├── </span><span class="dir">catalog/</span>
+            <span class="comment"> # 组件分类目录</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ ├── </span><span class="dir">preview/</span>
+            <span class="comment"> # 组件在线预览/演示</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ │ └── </span><span class="dir">download/</span>
+            <span class="comment"> # 组件下载/安装引导</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">stores/</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ └── </span><span class="dir">api/</span>
+            <span class="comment"> # NestJS 后端服务</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="file">nest-cli.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="file">tsconfig.json</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ └── </span><span class="dir">src/</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="file">main.ts</span>
+            <span class="comment"> # NestJS 入口</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">database/</span>
+            <span class="comment"> # TypeORM + PostgreSQL 数据层</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">entities/</span>
+            <span class="comment"> # 实体定义</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">migrations/</span>
+            <span class="comment"> # 数据库迁移文件</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">data-source.ts</span>
+            <span class="comment"> # DataSource 配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">common/</span>
+            <span class="comment"> # 公共 (guards/filters/interceptors)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">config/</span>
+            <span class="comment"> # 配置模块 (env/database等)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">modules/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">auth/</span>
+            <span class="comment"> # 认证模块 (JWT/OAuth)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">user/</span>
+            <span class="comment"> # 用户模块</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">portal/</span>
+            <span class="comment"> # 管控中心模块 (更新日志/统计)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">mock/</span>
+            <span class="comment"> # Mock 平台模块 (解析/生成)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">house-hunting/</span>
+            <span class="comment"> # 看房日志模块</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">component-hub/</span>
+            <span class="comment"> # 组件中心模块</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ └── </span><span class="dir">shared/</span>
+            <span class="comment"> # DTO / 实体 / 工具函数</span>
+          </div>
+          <div class="tree-line"><span class="conn">│</span></div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="dir">packages/</span>
+            <span class="comment"> # ====== 共享包层 ======</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">shared-ui/</span>
+            <span class="comment"> # 共享 UI 组件库</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
+            <span class="comment"> # 通用组件 (Button/Card/Modal…)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">themes/</span>
+            <span class="comment"> # HeroUI + Tailwind 主题配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
+            <span class="comment"> # 统一导出</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">shared-auth/</span>
+            <span class="comment"> # 共享鉴权模块</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">auth-provider.tsx</span>
+            <span class="comment"> # 鉴权 Context + Provider</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">auth-guard.tsx</span>
+            <span class="comment"> # 路由守卫组件</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">use-auth.ts</span>
+            <span class="comment"> # 鉴权 Hook</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">types.ts</span>
+            <span class="comment"> # 鉴权相关类型</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">shared-utils/</span>
+            <span class="comment"> # 共享工具函数</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">http/</span>
+            <span class="comment"> # axios 封装 + 拦截器</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">format/</span>
+            <span class="comment"> # 日期/数字格式化</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">storage/</span>
+            <span class="comment"> # localStorage 封装</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">shared-types/</span>
+            <span class="comment"> # 共享 TypeScript 类型</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">api.d.ts</span>
+            <span class="comment"> # API 响应/请求类型</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">models.d.ts</span>
+            <span class="comment"> # 业务模型类型</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">enums.ts</span>
+            <span class="comment"> # 共享枚举</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">shared-config/</span>
+            <span class="comment"> # 共享构建配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">vite.base.ts</span>
+            <span class="comment"> # Vite 基础配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">tailwind.base.ts</span>
+            <span class="comment"> # Tailwind 基础配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">shared-styles/</span>
+            <span class="comment"> # 共享样式基础 (CSS 变量 &amp; 设计 Token)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="dir">src/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">tokens/</span>
+            <span class="comment"> # 设计 Token (颜色/字号/间距…)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="dir">css/</span>
+            <span class="comment"> # CSS 基础 (reset/variables/utilities)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">tailwind-preset.ts</span>
+            <span class="comment"> # Tailwind 预设 (映射 Token → CSS 变量)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ │</span></div>
+          <div class="tree-line">
+            <span class="conn">│ └── </span><span class="dir">shared-i18n/</span>
+            <span class="comment"> # 共享国际化 (i18next 资源 + Hook)</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="file">package.json</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ └── </span><span class="dir">src/</span></div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">locales/</span>
+            <span class="comment"> # zh-CN / en-US 资源 JSON</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="file">i18n.ts</span>
+            <span class="comment"> # i18next 实例初始化</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="file">use-i18n.ts</span>
+            <span class="comment"> # 语言切换 Hook</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ └── </span><span class="file">index.ts</span>
+          </div>
+          <div class="tree-line"><span class="conn">│</span></div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="dir">infra/</span>
+            <span class="comment"> # ====== 基础设施层 ======</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">docker/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">Dockerfile.api</span>
+            <span class="comment"> # API 服务镜像</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">Dockerfile.web</span>
+            <span class="comment"> # 前端 Nginx 镜像</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">docker-compose.yml</span>
+            <span class="comment"> # 本地开发编排</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">.dockerignore</span>
+            <span class="comment"> # Docker 构建忽略文件</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">nginx/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">nginx.conf</span>
+            <span class="comment"> # 反向代理配置</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ ├── </span><span class="dir">scripts/</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ ├── </span><span class="file">deploy.sh</span>
+            <span class="comment"> # 部署脚本</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">│ │ └── </span><span class="file">db-migrate.sh</span>
+            <span class="comment"> # 数据库迁移脚本</span>
+          </div>
+          <div class="tree-line"><span class="conn">│ └── </span><span class="dir">ci/</span></div>
+          <div class="tree-line">
+            <span class="conn">│ └── </span><span class="file">.github/</span>
+            <span class="comment"> # GitHub Actions 工作流</span>
+          </div>
+          <div class="tree-line"><span class="conn">│</span></div>
+          <div class="tree-line">
+            <span class="conn">└── </span><span class="dir">docs/</span>
+            <span class="comment"> # ====== 文档 ======</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">architecture.md</span>
+            <span class="comment"> # 架构设计文档</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">├── </span><span class="file">deployment.md</span>
+            <span class="comment"> # 部署文档</span>
+          </div>
+          <div class="tree-line">
+            <span class="conn">└── </span><span class="file">contributing.md</span>
+            <span class="comment"> # 贡献指南</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 应用层详解 ====== -->
+      <div class="section">
+        <div class="section-title">应用层详解 — apps/</div>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-path">apps/main-app</div>
+            <div class="card-title">micro-app 基座 (Host Application)</div>
+            <div class="card-desc">
+              整个平台的壳应用，基于 micro-app
+              实现微前端架构，负责全局布局、路由分发、子应用注册与挂载。<br />
+              管理全局状态（用户信息、主题切换、侧边栏状态等），提供统一的 Header/Sidebar/Footer
+              布局。
+            </div>
+            <div class="card-tags">
+              <span>React</span><span>Vite</span><span>micro-app 宿主</span><span>全局布局</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">apps/portal</div>
+            <div class="card-title">管控中心子应用</div>
+            <div class="card-desc">
+              平台的门户与管控中枢，三个子页面边界清晰：<br />
+              <strong>dashboard</strong> — 应用入口宫格，展示并跳转各子应用；<br />
+              <strong>changelog</strong> — 各应用版本迭代与变更记录；<br />
+              <strong>stats</strong> — 独立数据看板页，汇总各应用的关键指标（不与 dashboard
+              混在一起）；<br />
+              未来可扩展博客/公告类功能。
+            </div>
+            <div class="card-tags">
+              <span>React</span><span>Vite</span><span>micro-app 子应用</span><span>门户</span
+              ><span>数据看板</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">apps/mock-platform</div>
+            <div class="card-title">Mock 平台子应用</div>
+            <div class="card-desc">
+              根据后端接口文档一键生成 Mock 数据。<br />
+              <strong>文档导入</strong> — 支持 Swagger/OpenAPI JSON、Markdown 格式解析；<br />
+              <strong>在线 Mock</strong> — 生成后直接在线使用，提供临时 Mock 服务地址；<br />
+              <strong>离线下载</strong> — 导出为 JSON/JS Mock 文件，可在本地项目中使用。<br />
+              内置 Swagger/MD 解析引擎，自动提取接口路径、参数、响应结构。
+            </div>
+            <div class="card-tags">
+              <span>React</span><span>Vite</span><span>micro-app 子应用</span><span>Swagger</span
+              ><span>Mock</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">apps/house-hunting</div>
+            <div class="card-title">看房日志子应用</div>
+            <div class="card-desc">
+              记录每次看房的详细信息与主观评价。<br />
+              <strong>看房记录</strong> — 小区、户型、价格、面积、位置等字段；<br />
+              <strong>评分与标签</strong> — 多维度打分 + 自定义标签；<br />
+              <strong>统计对比</strong> — 多房源横向对比、价格趋势、综合排名。
+            </div>
+            <div class="card-tags" style="margin-top: 6px">
+              <span>React</span><span>Vite</span><span>micro-app 子应用</span><span>生活记录</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">apps/component-hub</div>
+            <div class="card-title">组件中心子应用</div>
+            <div class="card-desc">
+              统计、归纳、展示可用组件。<br />
+              <strong>分类目录</strong> — 按类型/功能/来源分类浏览；<br />
+              <strong>在线预览</strong> — 实时渲染组件 Demo，支持交互调试；<br />
+              <strong>下载使用</strong> — 一键复制安装命令或下载源码，支持 npm 包和源码两种方式。<br />
+              <strong>⚠ 与 shared-ui 的边界：</strong>component-hub 不重复实现组件，而是消费
+              shared-ui 导出的 metadata（导出清单 + JSDoc + Demo
+              文件），自动渲染目录与预览，避免双倍维护。
+            </div>
+            <div class="card-tags">
+              <span>React</span><span>Vite</span><span>micro-app 子应用</span
+              ><span>shared-ui 消费方</span><span>Storybook</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">apps/api</div>
+            <div class="card-title">NestJS 后端服务</div>
+            <div class="card-desc">
+              统一后端 API，采用模块化架构，<strong>TypeORM 连接 PostgreSQL</strong>（JSONB 字段对
+              Mock 数据 / 看房标签等动态结构友好）。<br />
+              包含
+              Auth（认证）、User（用户）、Portal（管控）、Mock（解析生成）、HouseHunting（看房）、ComponentHub（组件）等业务模块。<br />
+              提供统一的鉴权守卫、异常过滤、日志拦截、Sentry 上报等公共能力，并通过
+              <code>@nestjs/swagger</code> 暴露 <code>/api/docs</code>，可被 Mock 平台直接消费。
+            </div>
+            <div class="card-tags">
+              <span>NestJS</span><span>TypeORM</span><span>PostgreSQL</span><span>JWT</span
+              ><span>Swagger</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 共享包详解 ====== -->
+      <div class="section">
+        <div class="section-title green">共享包层详解 — packages/</div>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-path">packages/shared-ui</div>
+            <div class="card-title">共享 UI 组件库</div>
+            <div class="card-desc">
+              基于 HeroUI + TailwindCSS 封装的通用组件库。<br />
+              统一设计语言，所有子应用通过
+              <strong>@hstack/shared-ui</strong> 引入组件，确保视觉一致性。<br />
+              包含主题配置 (亮/暗色) 和品牌 Token。
+            </div>
+            <div class="card-tags">
+              <span>HeroUI</span><span>TailwindCSS</span><span>Design System</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">packages/shared-auth</div>
+            <div class="card-title">共享鉴权模块</div>
+            <div class="card-desc">
+              前端鉴权的<strong>统一抽象层</strong>，包含 AuthProvider、路由守卫、useAuth Hook。<br />
+              基座应用在顶层注入 Provider，子应用通过 Hook 消费鉴权状态。<br />
+              子应用不需要各自实现鉴权逻辑，只需调用统一接口。
+            </div>
+            <div class="card-tags">
+              <span>Context</span><span>路由守卫</span><span>JWT</span><span>OAuth</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">packages/shared-utils</div>
+            <div class="card-title">共享工具函数</div>
+            <div class="card-desc">
+              纯逻辑工具集：HTTP 客户端封装（axios 拦截器、token
+              自动刷新）、日期/数字格式化、本地存储封装等。<br />
+              无 UI 依赖，可在前端任意应用及 API 的共享层使用。
+            </div>
+            <div class="card-tags"><span>axios</span><span>格式化</span><span>storage</span></div>
+          </div>
+          <div class="card">
+            <div class="card-path">packages/shared-types</div>
+            <div class="card-title">
+              共享 TypeScript 类型
+              <span style="font-size: 0.8rem; color: var(--orange)">— 仅放横切类型</span>
+            </div>
+            <div class="card-desc">
+              <strong>只收纳真正全局共享的类型</strong
+              >，遵循"删掉某个子应用后该类型是否仍有用"的原则。<br />
+              API 响应信封、分页结构、Auth 相关类型、通用枚举等。<br />
+              <strong>业务专属类型</strong>（如 Portal 的统计 DTO、HouseHunting
+              的房源模型）留在各自模块内 (apps/api/src/modules/{domain}/dto/)，前端通过 tsconfig
+              alias 引。
+            </div>
+            <div class="card-tags">
+              <span>TypeScript</span><span>横切类型</span><span>前后端共享</span
+              ><span>就近原则</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">packages/shared-config</div>
+            <div class="card-title">
+              共享构建配置
+              <span style="font-size: 0.8rem; color: var(--orange)">— 可简化为根目录 extends</span>
+            </div>
+            <div class="card-desc">
+              Vite、Tailwind、ESLint 等工具的基础配置抽取。<br />
+              <strong>注意：</strong>纯静态配置（如 tsconfig、eslint、prettier）更推荐用根目录文件 +
+              <code>extends</code> 引用，不必做成 workspace package。<br />
+              仅当包含<strong>可复用的构建逻辑</strong>（如自定义 Vite
+              插件）时，才值得作为独立包维护。
+            </div>
+            <div class="card-tags">
+              <span>Vite</span><span>Tailwind</span><span>ESLint</span><span>可简化</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">packages/shared-styles</div>
+            <div class="card-title">
+              共享样式基础 <span style="font-size: 0.8rem; color: var(--accent2)">— 新增</span>
+            </div>
+            <div class="card-desc">
+              <strong>纯样式层，零组件依赖。</strong>从 shared-ui 中剥离设计 Token 与 CSS
+              基础，供所有应用（甚至非 React 场景）复用。<br />
+              包含：设计 Token (颜色/字号/间距)、CSS Reset、CSS 变量、Tailwind 预设、HeroUI
+              主题覆盖。<br />
+              shared-ui 依赖本包获取 Token，应用直接
+              <code>import '@hstack/shared-styles/css'</code> 即可引入全局样式。
+            </div>
+            <div class="card-tags">
+              <span>Design Token</span><span>CSS 变量</span><span>Tailwind Preset</span
+              ><span>零依赖</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">packages/shared-i18n</div>
+            <div class="card-title">
+              共享国际化 <span style="font-size: 0.8rem; color: var(--accent2)">— 新增</span>
+            </div>
+            <div class="card-desc">
+              基于 <strong>i18next + react-i18next</strong> 的统一国际化方案。<br />
+              包含：i18next 实例初始化、语言资源（zh-CN / en-US）、<code>useI18n()</code>
+              Hook、语言切换组件。<br />
+              语言状态通过 micro-app data 通道下发到子应用，避免每个子应用各自管理语言上下文。<br />
+              个人项目阶段先做 zh-CN，留好扩展接口。
+            </div>
+            <div class="card-tags">
+              <span>i18next</span><span>react-i18next</span><span>多语言</span><span>Hook</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 类型分层策略 ====== -->
+      <div class="section">
+        <div class="section-title orange">类型分层策略</div>
+        <div class="discussion">
+          <h3>并非所有 Type 都应放进 shared-types</h3>
+
+          <div class="option">
+            <div class="opt-label plan-a">原则：横切类型进 shared-types，领域类型就近定义</div>
+            <div class="opt-desc">
+              <strong>判断标准：</strong
+              >"如果删掉某个子应用，这个类型还有存在的必要吗？"<br /><br />
+              <strong>✅ 进 shared-types 的横切类型：</strong>API 响应信封、分页结构、Auth/JWT
+              类型、通用枚举（状态/排序方向）、用户基础信息。<br /><br />
+              <strong>❌ 不进 shared-types 的领域类型：</strong>Portal 的统计 DTO、Mock 平台的
+              Swagger 解析类型、HouseHunting 的房源模型、ComponentHub 的组件元数据。<br />
+              这些类型留在 <code>apps/api/src/modules/{domain}/dto/</code>，前端子应用通过
+              <strong>tsconfig paths alias</strong> 直接引用。
+            </div>
+          </div>
+
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="ac-title good">shared-types</div>
+              <div class="ac-desc">
+                <code>api.d.ts</code> — 响应信封<br />
+                <code>auth.d.ts</code> — JWT Payload / 角色<br />
+                <code>common.d.ts</code> — 通用枚举<br />
+                所有应用都可能用到的类型。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title warn">API 领域 DTO</div>
+              <div class="ac-desc">
+                <code>modules/portal/dto/</code> — 统计 &amp; 更新日志<br />
+                <code>modules/mock/dto/</code> — Mock 项目 &amp; 接口<br />
+                <code>modules/house-hunting/dto/</code> — 房源模型<br />
+                前端通过 alias 引用，不污染 shared 包。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title good">前端子应用消费方式</div>
+              <div class="ac-desc">
+                子应用 tsconfig 配置 path alias：<br />
+                <code>"@api/portal": ["../api/src/modules/portal/dto"]</code><br />
+                然后直接 <code>import { StatsDto } from '@api/portal'</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="option" style="margin-top: 16px">
+            <div class="opt-label plan-a">⚠ DTO 跨包引用注意：保持「纯 type」</div>
+            <div class="opt-desc">
+              前端通过 alias 引 <code>apps/api/src/modules/{domain}/dto</code> 时，DTO
+              文件内<strong>不要直接写装饰器</strong>（<code>@IsString()</code>、<code
+                >@ApiProperty()</code
+              >
+              等）—— 会把 NestJS / class-validator 拖到前端 bundle 里，tree-shake 也救不回来。<br /><br />
+              <strong>建议拆成两文件：</strong><br />
+              • <code>xxx.dto.ts</code> — 纯 <code>interface</code> /
+              <code>type</code>，前后端共享；<br />
+              • <code>xxx.validator.ts</code> — class + 装饰器，仅后端用，<code>implements</code>
+              上面的 interface 保证字段同步。
+            </div>
+          </div>
+
+          <div class="confirmed">
+            <strong>结论：</strong>shared-types 只放横切类型，避免"一个类型改动 → 所有应用重建"。<br />
+            领域类型就近定义在 API 模块内（保持纯 type，校验器分文件），前端通过 tsconfig alias
+            消费，既保持类型安全，又解耦了不必要的依赖。
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 共享样式架构 ====== -->
+      <div class="section">
+        <div class="section-title cyan">共享样式架构 — 新增 shared-styles</div>
+        <div class="discussion">
+          <h3>为什么需要独立的样式基础包？</h3>
+
+          <div class="option">
+            <div class="opt-label plan-a">问题：shared-ui 承载了两件事</div>
+            <div class="opt-desc">
+              当前 shared-ui 同时包含 <strong>组件库</strong> 和
+              <strong>主题/样式基础</strong>。<br />
+              如果某个子应用只想引用颜色 Token 或 CSS 变量，不需要引入整套组件库。<br />
+              设计 Token 应该是一个<strong>零依赖的纯数据层</strong>，甚至可以被文档站、CLI
+              工具复用。
+            </div>
+          </div>
+
+          <div class="option">
+            <div class="opt-label plan-a">方案：新增 shared-styles，层级依赖</div>
+            <div class="opt-desc">
+              <strong>shared-styles</strong>（零依赖）→ <strong>shared-ui</strong>（依赖
+              shared-styles）→ <strong>apps/*</strong>（依赖两者）<br /><br />
+              shared-styles 提供：设计 Token (colors.ts / spacing.ts / typography.ts)、CSS
+              Reset、CSS 变量定义、Tailwind 预设、HeroUI 主题覆盖。<br />
+              子应用只需 <code>import '@hstack/shared-styles/css/variables.css'</code> 即可获得全局
+              CSS 变量。
+            </div>
+          </div>
+
+          <div class="confirmed">
+            <strong>包依赖关系：</strong><br /><br />
+            <code>shared-styles</code> ← 零依赖，纯数据 + CSS<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;↓<br />
+            <code>shared-ui</code> ← 依赖 shared-styles 的 Token 和 CSS 变量来构建组件<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;↓<br />
+            <code>apps/*</code> ← 直接依赖 shared-styles（全局样式入口）+ shared-ui（组件）<br /><br />
+            修改品牌色只需改 <code>tokens/colors.ts</code> 一处，全局生效；<br />
+            任何一个应用都可以独立引入样式基础，不强制依赖 React 组件。
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 状态管理策略 ====== -->
+      <div class="section">
+        <div class="section-title cyan">状态管理策略 — Zustand</div>
+        <div class="discussion">
+          <h3>选型与跨 Shadow DOM 共享思路</h3>
+
+          <div class="option">
+            <div class="opt-label plan-a">为什么选 Zustand</div>
+            <div class="opt-desc">
+              <strong>无 Provider</strong> — 不需要包一层 Context，天然规避「React Context 不穿透
+              Shadow DOM」的问题；<br />
+              <strong>API 极简</strong> — <code>create()</code> 一个 store，<code
+                >useStore(selector)</code
+              >
+              即用即取；<br />
+              <strong>体积小</strong> — gzip 后 &lt; 1KB，每个子应用各自打包也不心疼；<br />
+              <strong>可订阅外部事件</strong> — 适合接 micro-app 的 data 通道。
+            </div>
+          </div>
+
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="ac-title good">局部 store</div>
+              <div class="ac-desc">
+                各子应用 <code>src/stores/</code> 下的业务态（页面筛选、表单草稿等），完全独立。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title good">全局 store (基座)</div>
+              <div class="ac-desc">
+                main-app 持有 <code>useGlobalStore</code>：用户、主题、语言、侧边栏折叠态。<br />
+                通过 <code>&lt;micro-app data={globalState}&gt;</code> 下发到子应用。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title warn">子应用「镜像 store」</div>
+              <div class="ac-desc">
+                子应用内部建一个轻量 store，订阅
+                <code>window.microApp.addDataListener</code
+                >，把基座下发的数据同步进来；本地组件统一从镜像 store 读，独立运行时降级为读
+                localStorage。
+              </div>
+            </div>
+          </div>
+
+          <div class="confirmed">
+            <strong>核心约定：</strong>子应用<strong>从不直接</strong>从 React Context / window
+            读全局态，一律走自身的 Zustand 镜像 store —— 这样独立运行 /
+            嵌入运行只切换数据源，业务代码零改动。
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 微前端通信机制 ====== -->
+      <div class="section">
+        <div class="section-title orange">微前端通信机制 — micro-app data 桥</div>
+        <div class="discussion">
+          <h3>跨 Shadow DOM 的状态与事件流</h3>
+
+          <div class="option">
+            <div class="opt-label plan-a">问题：React Context 不穿透 Shadow DOM</div>
+            <div class="opt-desc">
+              shared-auth 的 AuthProvider 写在基座，子应用即便引用同一个 React 实例，<strong
+                >Context 也不会跨越 Shadow Root 边界</strong
+              >。<br />
+              因此 <code>useAuth()</code> 不能直接消费基座的 Context，必须走 micro-app
+              自己的通信通道。
+            </div>
+          </div>
+
+          <div class="option">
+            <div class="opt-label plan-a">方案：data props 下行 + customEvent 上行</div>
+            <div class="opt-desc">
+              <strong>下行（基座 → 子应用）：</strong>基座
+              <code>&lt;micro-app data={{ user, token, theme, locale }} /&gt;</code>，子应用
+              <code>window.microApp.addDataListener(cb)</code> 订阅。<br />
+              <strong>上行（子应用 → 基座）：</strong>子应用
+              <code>window.microApp.dispatch({ type: 'auth:logout' })</code>，基座监听
+              <code>data-change</code> 事件处理。<br />
+              <strong>shared-auth 适配：</strong><code>useAuth()</code> 内部检测
+              <code>window.__MICRO_APP_ENVIRONMENT__</code>，自动选择数据源（嵌入 → microApp
+              data；独立 → localStorage + 接口）。
+            </div>
+          </div>
+
+          <div class="confirmed">
+            <strong>统一通信约定：</strong><br />
+            1. 所有跨应用状态走 micro-app 的 data 通道，不绕道全局变量；<br />
+            2. 事件命名采用「<code>领域:动作</code>」格式（如
+            <code>auth:logout</code>、<code>theme:change</code>）；<br />
+            3. shared-auth / shared-i18n 内部封装好检测逻辑，业务代码无感。
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 路由协同策略 ====== -->
+      <div class="section">
+        <div class="section-title green">路由协同策略</div>
+        <div class="discussion">
+          <h3>主应用与子应用的路由如何分工</h3>
+
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>层级</th>
+                <th>路由策略</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>main-app（基座）</td>
+                <td>BrowserRouter + 一级路由</td>
+                <td>
+                  负责 <code>/portal</code>、<code>/mock</code>、<code>/house</code>、<code
+                    >/components</code
+                  >
+                  一级分发，每个一级路由挂载对应 micro-app 标签。
+                </td>
+              </tr>
+              <tr class="chosen">
+                <td>子应用（嵌入态）</td>
+                <td>BrowserRouter + basename 注入</td>
+                <td>
+                  basename 由基座通过 micro-app data 传入（如
+                  <code>/portal</code>），子应用读取后用作 BrowserRouter basename。
+                </td>
+              </tr>
+              <tr>
+                <td>子应用（独立态）</td>
+                <td>BrowserRouter + basename = '/'</td>
+                <td>未检测到 micro-app 环境时退回根路径，独立 dev 体验完整。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="ac-title good">keep-alive 模式</div>
+              <div class="ac-desc">
+                切换子应用时使用
+                <code>&lt;micro-app keep-alive /&gt;</code
+                >，子应用实例不销毁、路由状态保留，回切后停留在原页面。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title warn">history 同步</div>
+              <div class="ac-desc">
+                子应用内部 <code>navigate('/list')</code> 实际指向
+                <code>/portal/list</code>；浏览器前进后退由 micro-app 自动同步。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title warn">404 fallback</div>
+              <div class="ac-desc">
+                Nginx 配置 <code>try_files $uri /index.html</code>，所有未匹配路径回到基座
+                SPA，由基座路由判断是否为合法子应用前缀。
+              </div>
+            </div>
+          </div>
+
+          <div class="confirmed">
+            <strong>结论：</strong>basename 走 micro-app data
+            注入，子应用代码完全不感知自己被嵌在何处；基座统一管理 keep-alive / history / 404
+            fallback，子应用只关心自己 basename 内的路由。
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 鉴权方案讨论 ====== -->
+      <div class="section">
+        <div class="section-title orange">鉴权方案讨论</div>
+        <div class="discussion">
+          <h3>鉴权写在公共部分还是每个子应用各自写？</h3>
+
+          <div class="option">
+            <div class="opt-label plan-a">方案 A：鉴权写在公共部分 ✓ 已采纳</div>
+            <div class="opt-desc">
+              将鉴权逻辑抽取到 <strong>packages/shared-auth</strong>，由基座应用 (main-app)
+              在顶层注入 AuthProvider。<br />
+              子应用通过 <strong>useAuth()</strong> Hook 消费用户状态，通过
+              <strong>AuthGuard</strong> 组件保护路由。<br /><br />
+              <strong>优点：</strong
+              >一次实现、所有子应用复用；用户状态全局统一（登录/登出所有子应用同步）；切换子应用无感知。<br />
+              <strong>缺点：</strong>子应用与基座产生耦合，独立运行时需 mock Provider。
+            </div>
+          </div>
+
+          <div class="option" style="opacity: 0.5">
+            <div class="opt-label plan-b">方案 B：每个子应用各自实现鉴权 (未采纳)</div>
+            <div class="opt-desc">
+              每个子应用独立管理自己的鉴权逻辑和路由守卫。<br /><br />
+              <strong>优点：</strong>子应用完全独立，可脱离基座单独运行。<br />
+              <strong>缺点：</strong>重复代码多；登录状态不同步；每个子应用都要维护 token
+              刷新逻辑；改动需同步多处。
+            </div>
+          </div>
+
+          <div class="confirmed">
+            <strong>已采纳方案 A</strong>，采用「共享包 + 基座注入 + 子应用消费」模式：<br /><br />
+            1.
+            <strong>packages/shared-auth</strong>
+            提供鉴权的所有抽象：AuthProvider、AuthGuard、useAuth、token 管理。<br />
+            2. <strong>apps/main-app</strong> 在根组件注入 AuthProvider，持有全局鉴权状态。<br />
+            3. <strong>子应用</strong>通过 micro-app data 通道获取用户信息（不直接消费基座
+            Context），<code>useAuth()</code> 内部封装好这层适配。<br />
+            4. <strong>运行模式自动检测：</strong><code>useAuth()</code> 检测
+            <code>window.__MICRO_APP_ENVIRONMENT__</code>：<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;• <code>AUTH_MODE = 'embedded'</code> → 读 microApp data，token
+            刷新由基座负责，401 跳基座登录页；<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;• <code>AUTH_MODE = 'standalone'</code> → 读
+            localStorage，自己调 <code>/auth/refresh</code>，401 跳本地登录页。<br />
+            5. 子应用独立开发时，提供一个
+            <strong>MockAuthProvider</strong> 注入伪用户，方便本地调试。<br /><br />
+            既保持了代码复用，又不失子应用的独立开发与独立部署能力。
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 微前端选型分析 ====== -->
+      <div class="section">
+        <div class="section-title cyan">微前端框架选型 — micro-app ✓</div>
+        <div class="discussion">
+          <h3>主流方案横向对比</h3>
+
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>维度</th>
+                <th>qiankun</th>
+                <th>micro-app ✓</th>
+                <th>wujie</th>
+                <th>Module Federation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>出品</td>
+                <td>阿里</td>
+                <td class="chosen">京东</td>
+                <td>腾讯</td>
+                <td>Webpack 5 / Vite 社区</td>
+              </tr>
+              <tr>
+                <td>底层原理</td>
+                <td>single-spa + JS 沙箱</td>
+                <td class="chosen">Web Components + 沙箱</td>
+                <td>iframe + Web Components</td>
+                <td>构建时模块共享</td>
+              </tr>
+              <tr>
+                <td>Vite 兼容</td>
+                <td class="tag-no">差 (需插件 hack)</td>
+                <td class="tag-yes chosen">好 (官方插件)</td>
+                <td class="tag-yes">好</td>
+                <td class="tag-mid">中 (社区插件)</td>
+              </tr>
+              <tr>
+                <td>接入成本</td>
+                <td class="tag-mid">中 (需改造生命周期)</td>
+                <td class="tag-yes chosen">低 (一行标签挂载)</td>
+                <td class="tag-yes">低</td>
+                <td class="tag-no">高 (需改构建配置)</td>
+              </tr>
+              <tr>
+                <td>沙箱隔离</td>
+                <td>JS 沙箱 (Proxy)</td>
+                <td class="chosen">JS 沙箱 + CSS 隔离</td>
+                <td>iframe 天然隔离</td>
+                <td class="tag-no">无隔离</td>
+              </tr>
+              <tr>
+                <td>样式隔离</td>
+                <td>Shadow DOM / experimental</td>
+                <td class="chosen">Shadow DOM</td>
+                <td>iframe 天然隔离</td>
+                <td class="tag-no">无</td>
+              </tr>
+              <tr>
+                <td>技术栈限制</td>
+                <td>任意</td>
+                <td class="chosen">任意</td>
+                <td>任意</td>
+                <td>任意 (但共享依赖需同构建工具)</td>
+              </tr>
+              <tr>
+                <td>Monorepo 友好</td>
+                <td class="tag-mid">中</td>
+                <td class="tag-yes chosen">好</td>
+                <td class="tag-yes">好</td>
+                <td class="tag-yes">最友好</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 style="margin-top: 24px">逐方案分析</h3>
+
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="ac-title bad">qiankun — 不推荐</div>
+              <div class="ac-desc">
+                最大问题：<strong>和 Vite 不兼容</strong>。要求子应用暴露 UMD 格式生命周期，而 Vite
+                默认产出 ESM，需额外插件 (vite-plugin-qiankun) 做转换，坑多且维护滞后。<br />
+                社区活跃度下降，阿里内部也在转向其他方案。全栈 Vite 项目强行适配纯属给自己找麻烦。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title good">micro-app — 已选用</div>
+              <div class="ac-desc">
+                接入最简单：基座用
+                <strong>&lt;micro-app name="portal" url="http://localhost:3001" /&gt;</strong>
+                一行标签即可挂载。<br />
+                Vite 原生支持 (@micro-app/vite-plugin)，Monorepo 适配好，沙箱够用。<br />
+                <strong>⚠ HeroUI 兼容注意：</strong>HeroUI 的 Modal/Popover/Dropdown 等 Portal
+                组件默认挂载到 document.body，会逃逸 Shadow DOM 导致样式丢失。需在 shared-ui
+                中统一封装，用 <code>container</code> prop 指定挂载点为 Shadow Root 内节点。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title warn">wujie — 偏重</div>
+              <div class="ac-desc">
+                隔离最强 (iframe 级别)，适合对接老项目、异构技术栈。<br />
+                但本项目所有子应用技术栈统一 (React + Vite)，iframe
+                隔离反而是负担：通信成本高、弹窗/路由同步麻烦。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title warn">Module Federation — 有代价</div>
+              <div class="ac-desc">
+                最契合 Monorepo (共享依赖天然解决)，性能最好 (构建时方案)。<br />
+                但 Vite
+                支持不够成熟；子应用无法真正独立运行；版本冲突处理复杂；调试困难。适合更大规模的项目。
+              </div>
+            </div>
+          </div>
+
+          <div class="confirmed">
+            <strong>已选用 micro-app</strong>，核心理由：<br /><br />
+            1. <strong>Vite 兼容性最好</strong> — 零折腾，官方提供 Vite 插件。<br />
+            2. <strong>接入成本最低</strong> — 一个人维护所有子应用，效率优先。<br />
+            3. <strong>沙箱隔离够用</strong> — 技术栈统一 (React + Vite)，不需要 iframe 级隔离。<br />
+            4. <strong>独立开发体验好</strong> — 每个子应用可单独 pnpm dev 运行，配合
+            MockAuthProvider 不依赖基座。<br />
+            5. <strong>社区稳定</strong> — 京东内部大规模使用，维护活跃。<br /><br />
+            本项目已有 shared packages 实现依赖共享，无需 Module Federation
+            的构建时共享能力。当前阶段 micro-app 是性价比最高的选择。
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 微前端共享依赖策略 ====== -->
+      <div class="section">
+        <div class="section-title orange">微前端共享依赖策略</div>
+        <div class="discussion">
+          <h3>shared packages 是各自打包还是基座统一提供？</h3>
+
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>策略</th>
+                <th>做法</th>
+                <th>优点</th>
+                <th>缺点</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="chosen">
+                <td>各自打包 ✓</td>
+                <td>每个子应用独立 bundle shared-ui / shared-utils 等</td>
+                <td>子应用完全独立，可脱离基座单独开发</td>
+                <td class="tag-mid">重复加载，总体积较大</td>
+              </tr>
+              <tr>
+                <td>基座 external</td>
+                <td>基座通过 importmap 或全局变量提供共享包，子应用标记为 external</td>
+                <td>单次加载、缓存好、体积小</td>
+                <td class="tag-no">子应用强耦合基座，版本难以独立升级</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="confirmed">
+            <strong>已采纳「各自打包」策略。</strong><br /><br />
+            核心理由：<br />
+            1. 当前为个人项目，总体积可控，不需要极致优化。<br />
+            2. 子应用独立开发体验优先 — pnpm dev 不依赖基座。<br />
+            3. 未来若规模增长，可通过 shared-config 统一 external 配置一键切换。
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 基础设施详解 ====== -->
+      <div class="section">
+        <div class="section-title">基础设施层详解 — infra/</div>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-path">infra/docker</div>
+            <div class="card-title">Docker 容器化</div>
+            <div class="card-desc">
+              API 服务和前端静态资源的 Docker 镜像定义。<br />
+              docker-compose.yml 用于本地一键启动完整开发环境（API + DB + Redis + Nginx）。<br />
+              .dockerignore 排除 node_modules 等，加速构建。
+            </div>
+            <div class="card-tags"><span>Docker</span><span>容器化</span></div>
+          </div>
+          <div class="card">
+            <div class="card-path">infra/scripts</div>
+            <div class="card-title">运维脚本</div>
+            <div class="card-desc">
+              自动化部署脚本、数据库迁移命令、环境初始化等运维工具。<br />
+              与 CI/CD 工作流配合，确保部署流程可复现。
+            </div>
+            <div class="card-tags"><span>Shell</span><span>运维</span><span>自动化</span></div>
+          </div>
+          <div class="card">
+            <div class="card-path">infra/nginx</div>
+            <div class="card-title">Nginx 反向代理</div>
+            <div class="card-desc">
+              前端静态资源托管 + API 反向代理。<br />
+              处理micro-app 子应用的资源路由、SPA history 模式 fallback。
+            </div>
+            <div class="card-tags"><span>Nginx</span><span>反向代理</span></div>
+          </div>
+          <div class="card">
+            <div class="card-path">infra/ci</div>
+            <div class="card-title">CI / CD 工作流</div>
+            <div class="card-desc">
+              GitHub Actions 自动化：Lint 检查、构建测试、镜像推送、自动部署。<br />
+              按应用粒度触发，只构建变更的子应用。
+            </div>
+            <div class="card-tags"><span>GitHub Actions</span><span>CI/CD</span></div>
+          </div>
+          <div class="card">
+            <div class="card-path">infra/sentry (集成)</div>
+            <div class="card-title">错误监控 — Sentry</div>
+            <div class="card-desc">
+              前端（main-app + 各子应用）+ NestJS 同时接入 Sentry SDK。<br />
+              <strong>前端</strong>：捕获未处理异常、Promise rejection、React Error Boundary
+              错误，附带 release / user 上下文；<br />
+              <strong>后端</strong>：通过 NestJS 全局异常 Filter 上报，关联 traceId；<br />
+              <strong>部署</strong>：可自托管 self-host Sentry 或用官方 SaaS，DSN 走 .env 注入。
+            </div>
+            <div class="card-tags">
+              <span>Sentry</span><span>错误监控</span><span>Error Boundary</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-path">.husky / .changeset</div>
+            <div class="card-title">代码质量与版本管理</div>
+            <div class="card-desc">
+              <strong>Husky + lint-staged</strong>：pre-commit 钩子自动 ESLint / Prettier
+              暂存文件，避免脏代码入库；<br />
+              <strong>commitlint</strong>：commit-msg 钩子校验 Conventional Commits 格式，配合
+              changesets 自动生成日志；<br />
+              <strong>Changesets</strong>：shared-* 包变更通过
+              <code>pnpm changeset</code> 生成补丁记录，CI 合并时自动汇总
+              CHANGELOG，即便不发布也能追踪变更历史。
+            </div>
+            <div class="card-tags">
+              <span>Husky</span><span>lint-staged</span><span>commitlint</span
+              ><span>changesets</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== Footer ====== -->
+      <div class="footer">
+        HStack Project Structure Outline &middot; Updated 2026-05-18 (rev.2 — Zustand / 通信桥 /
+        路由协同 / i18n / Sentry / 工程化)
+      </div>
+    </div>
+  </body>
+</html>

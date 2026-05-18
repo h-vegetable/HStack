@@ -1,0 +1,56 @@
+/* HStack global stylesheet — design tokens + base layer. */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --hs-color-brand: #4a6aff;
+  --hs-color-bg: #ffffff;
+  --hs-color-fg: #0f172a;
+  --hs-color-border: #e2e8f0;
+  --hs-color-muted: #64748b;
+  --hs-radius-md: 8px;
+  --hs-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.dark {
+  --hs-color-brand: #6a8eff;
+  --hs-color-bg: #0a0f1d;
+  --hs-color-fg: #f8fafc;
+  --hs-color-border: #1e293b;
+  --hs-color-muted: #94a3b8;
+  --hs-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--hs-color-bg);
+    color: var(--hs-color-fg);
+    font-family:
+      Inter,
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      'PingFang SC',
+      'Microsoft YaHei',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@hstack/shared-styles",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./css": "./src/index.css",
+    "./preset": "./src/tailwind-preset.ts",
+    "./tokens": "./src/tokens.ts",
+    "./heroui-theme": "./src/heroui-theme.ts"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "tailwindcss": "^3.4.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3"
+  }
+}

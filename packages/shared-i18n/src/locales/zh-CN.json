@@ -1,0 +1,20 @@
+{
+  "common": {
+    "ok": "确定",
+    "cancel": "取消",
+    "loading": "加载中...",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "back": "返回"
+  },
+  "nav": {
+    "home": "首页",
+    "portal": "管控中心",
+    "mock": "Mock 平台",
+    "houseHunting": "看房助手",
+    "componentHub": "组件中心",
+    "login": "登录",
+    "logout": "退出"
+  }
+}
