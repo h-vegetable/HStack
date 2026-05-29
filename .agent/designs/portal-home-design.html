@@ -1,0 +1,1381 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HStack 门户首页 · 轻科幻活力光感</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ═══════════════ Theme Variables ═══════════════ */
+      [data-theme='light'] {
+        --bg-start: #f5f3ff;
+        --bg-end: #edf2ff;
+        --card-bg: rgba(255, 255, 255, 0.55);
+        --card-border: rgba(93, 95, 239, 0.12);
+        --card-shadow: 0 8px 32px rgba(93, 95, 239, 0.1), 0 0 60px rgba(93, 95, 239, 0.05);
+        --primary: #5d5fef;
+        --primary-glow: rgba(93, 95, 239, 0.35);
+        --secondary: #00d2ff;
+        --accent: #ff7a9e;
+        --text: #1e1e2f;
+        --text-secondary: #4a4a6a;
+        --text-muted: #8e8ea0;
+        --input-bg: rgba(255, 255, 255, 0.5);
+        --input-border: rgba(93, 95, 239, 0.25);
+        --nav-bg: rgba(245, 243, 255, 0.72);
+        --scan-color: rgba(93, 95, 239, 0.5);
+        --scan-glow: rgba(93, 95, 239, 0.15);
+        --particle-alpha: 0.3;
+        --flow-alpha: 0.06;
+        --table-hover: rgba(93, 95, 239, 0.06);
+        --table-selected: rgba(93, 95, 239, 0.12);
+        --overlay: rgba(237, 242, 255, 0.6);
+        --badge-bg: rgba(93, 95, 239, 0.08);
+      }
+      [data-theme='dark'] {
+        --bg-start: #0f0a1e;
+        --bg-end: #1a1035;
+        --card-bg: rgba(30, 22, 60, 0.6);
+        --card-border: rgba(133, 130, 255, 0.18);
+        --card-shadow: 0 8px 32px rgba(133, 130, 255, 0.12), 0 0 60px rgba(58, 224, 217, 0.06);
+        --primary: #8582ff;
+        --primary-glow: rgba(133, 130, 255, 0.4);
+        --secondary: #3ae0d9;
+        --accent: #ff6b8b;
+        --text: #ede9ff;
+        --text-secondary: #b8b0d4;
+        --text-muted: #7a7294;
+        --input-bg: rgba(30, 22, 60, 0.4);
+        --input-border: rgba(133, 130, 255, 0.3);
+        --nav-bg: rgba(15, 10, 30, 0.78);
+        --scan-color: rgba(133, 130, 255, 0.7);
+        --scan-glow: rgba(58, 224, 217, 0.2);
+        --particle-alpha: 0.6;
+        --flow-alpha: 0.1;
+        --table-hover: rgba(58, 224, 217, 0.06);
+        --table-selected: rgba(133, 130, 255, 0.15);
+        --overlay: rgba(15, 10, 30, 0.7);
+        --badge-bg: rgba(133, 130, 255, 0.12);
+      }
+
+      /* ═══════════════ Reset & Base ═══════════════ */
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: 'Quicksand', system-ui, sans-serif;
+        background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+        transition:
+          background 0.6s ease,
+          color 0.4s ease;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: 'Rajdhani', 'Quicksand', sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+      a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+
+      /* ═══════════════ Canvas Layers ═══════════════ */
+      #particle-canvas,
+      #flow-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ═══════════════ Navigation ═══════════════ */
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        border-bottom: 1px solid var(--card-border);
+        transition: background 0.4s;
+      }
+      .nav-inner {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 32px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .nav-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .nav-logo svg {
+        width: 32px;
+        height: 32px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .nav-links a {
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        transition: all 0.25s ease;
+        position: relative;
+      }
+      .nav-links a:hover,
+      .nav-links a.active {
+        color: var(--primary);
+        background: var(--badge-bg);
+      }
+      .nav-links a.active::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 16px;
+        height: 2px;
+        border-radius: 1px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+      }
+      .nav-hologram-line {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          var(--primary) 30%,
+          var(--secondary) 70%,
+          transparent 100%
+        );
+        opacity: 0.5;
+        animation: holoLine 4s ease-in-out infinite;
+      }
+      @keyframes holoLine {
+        0%,
+        100% {
+          opacity: 0.3;
+          transform: scaleX(0.8);
+        }
+        50% {
+          opacity: 0.7;
+          transform: scaleX(1);
+        }
+      }
+
+      /* User Area */
+      .nav-user {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .nav-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary-glow), var(--scan-glow));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid var(--card-border);
+        cursor: pointer;
+        transition: all 0.25s;
+        font-size: 14px;
+        color: var(--primary);
+        font-weight: 700;
+      }
+      .nav-avatar:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 12px var(--primary-glow);
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        border: 1.5px solid var(--input-border);
+        background: var(--input-bg);
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .theme-toggle:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 12px var(--primary-glow);
+      }
+      .theme-toggle svg {
+        width: 18px;
+        height: 18px;
+        color: var(--primary);
+        transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      }
+      .theme-toggle:hover svg {
+        transform: rotate(180deg);
+      }
+
+      /* ═══════════════ Main Content ═══════════════ */
+      .main {
+        position: relative;
+        z-index: 1;
+        padding: 96px 32px 48px;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+
+      /* ═══════════════ Welcome Section ═══════════════ */
+      .welcome {
+        padding: 32px 0 40px;
+        animation: fadeInUp 0.6s ease both;
+      }
+      .welcome-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+      .welcome-text h1 {
+        font-size: clamp(28px, 4vw, 40px);
+        margin-bottom: 6px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .welcome-text p {
+        font-size: 16px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+      .welcome-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: var(--badge-bg);
+        border: 1px solid var(--card-border);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary);
+        backdrop-filter: blur(8px);
+        margin-top: 12px;
+      }
+      .welcome-badge .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--secondary);
+        animation: breathe 2s ease-in-out infinite;
+      }
+
+      /* Quick Stats */
+      .quick-stats {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .stat-chip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 20px;
+        border-radius: 16px;
+        background: var(--card-bg);
+        backdrop-filter: blur(16px) saturate(1.2);
+        border: 1px solid var(--card-border);
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .stat-chip:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px var(--primary-glow);
+      }
+      .stat-chip .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary-glow), var(--scan-glow));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 12px var(--primary-glow);
+      }
+      .stat-chip .stat-icon svg {
+        width: 18px;
+        height: 18px;
+        color: var(--primary);
+      }
+      .stat-chip .stat-val {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .stat-chip .stat-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      /* ═══════════════ Section Layout ═══════════════ */
+      .section {
+        margin-top: 48px;
+      }
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+      .section-title {
+        font-size: 24px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .section-action {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: color 0.2s;
+      }
+      .section-action:hover {
+        color: var(--secondary);
+      }
+
+      /* ═══════════════ App Cards ═══════════════ */
+      .app-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+      }
+      .app-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(16px) saturate(1.2);
+        -webkit-backdrop-filter: blur(16px) saturate(1.2);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: pointer;
+      }
+      .app-card:hover {
+        transform: translateY(-6px);
+        box-shadow:
+          0 16px 48px var(--primary-glow),
+          var(--card-shadow);
+      }
+      .app-card .scan-edge {
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        pointer-events: none;
+        background: conic-gradient(
+          from var(--scan-angle, 0deg),
+          transparent 0%,
+          var(--scan-color) 8%,
+          transparent 16%
+        );
+        -webkit-mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        padding: 1.5px;
+        animation: scanEdge 5s linear infinite;
+      }
+      @keyframes scanEdge {
+        to {
+          --scan-angle: 360deg;
+        }
+      }
+      @property --scan-angle {
+        syntax: '<angle>';
+        initial-value: 0deg;
+        inherits: false;
+      }
+      .app-card .card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+      .app-card .icon-wrap {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary-glow), var(--scan-glow));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 20px var(--primary-glow);
+      }
+      .app-card .icon-wrap svg {
+        width: 24px;
+        height: 24px;
+        color: var(--primary);
+      }
+      .app-card .card-status {
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .card-status.running {
+        background: rgba(0, 210, 255, 0.1);
+        color: var(--secondary);
+      }
+      .card-status.active {
+        background: var(--badge-bg);
+        color: var(--primary);
+      }
+      .card-status.dev {
+        background: rgba(255, 122, 158, 0.1);
+        color: var(--accent);
+      }
+      .app-card h3 {
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .app-card p {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+      .app-card .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .card-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 8px;
+        background: var(--badge-bg);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary);
+      }
+      .card-arrow {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        border: 1.5px solid var(--card-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        transition: all 0.25s;
+      }
+      .app-card:hover .card-arrow {
+        border-color: var(--primary);
+        color: var(--primary);
+        box-shadow: 0 0 8px var(--primary-glow);
+        transform: translateX(2px);
+      }
+
+      /* ═══════════════ Changelog ═══════════════ */
+      .changelog-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .changelog-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 18px 20px;
+        border-radius: 16px;
+        background: var(--card-bg);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--card-border);
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+      }
+      .changelog-item:hover {
+        background: var(--table-hover);
+      }
+      .changelog-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-top: 5px;
+        flex-shrink: 0;
+        box-shadow: 0 0 8px var(--primary-glow);
+      }
+      .changelog-dot.feature {
+        background: var(--secondary);
+      }
+      .changelog-dot.fix {
+        background: var(--accent);
+      }
+      .changelog-dot.refactor {
+        background: var(--primary);
+      }
+      .changelog-body {
+        flex: 1;
+      }
+      .changelog-body h4 {
+        font-size: 14px;
+        margin-bottom: 2px;
+      }
+      .changelog-body p {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+      .changelog-meta {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 6px;
+      }
+      .changelog-app {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: var(--badge-bg);
+        color: var(--primary);
+      }
+      .changelog-time {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      /* ═══════════════ Stats Grid ═══════════════ */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+      }
+      .stat-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px var(--primary-glow);
+      }
+      .stat-card .stat-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        opacity: 0.4;
+        transition: opacity 0.3s;
+      }
+      .stat-card:hover .stat-bar {
+        opacity: 0.8;
+      }
+      .stat-card .stat-number {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .stat-card .stat-name {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+      .stat-card .stat-trend {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-top: 8px;
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+      .stat-trend.up {
+        color: var(--secondary);
+        background: rgba(0, 210, 255, 0.08);
+      }
+      .stat-trend.down {
+        color: var(--accent);
+        background: rgba(255, 122, 158, 0.08);
+      }
+
+      /* ═══════════════ Footer ═══════════════ */
+      .footer {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding: 48px 32px 32px;
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-top: 32px;
+      }
+      .footer .flow-line {
+        width: 120px;
+        height: 2px;
+        margin: 0 auto 20px;
+        border-radius: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--primary),
+          var(--secondary),
+          transparent
+        );
+        opacity: 0.4;
+        animation: holoLine 3s ease-in-out infinite;
+      }
+
+      /* ═══════════════ Animations ═══════════════ */
+      @keyframes breathe {
+        0%,
+        100% {
+          opacity: 0.6;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.15);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .fade-in-up {
+        animation: fadeInUp 0.6s ease both;
+      }
+      .delay-1 {
+        animation-delay: 0.1s;
+      }
+      .delay-2 {
+        animation-delay: 0.2s;
+      }
+      .delay-3 {
+        animation-delay: 0.3s;
+      }
+      .delay-4 {
+        animation-delay: 0.4s;
+      }
+      .delay-5 {
+        animation-delay: 0.5s;
+      }
+
+      /* ═══════════════ Responsive ═══════════════ */
+      @media (max-width: 768px) {
+        .welcome-row {
+          flex-direction: column;
+        }
+        .quick-stats {
+          width: 100%;
+        }
+        .nav-inner {
+          padding: 0 16px;
+        }
+        .main {
+          padding: 96px 16px 32px;
+        }
+        .app-grid {
+          grid-template-columns: 1fr;
+        }
+        .nav-links a {
+          padding: 8px 10px;
+          font-size: 13px;
+        }
+      }
+      @media (max-width: 480px) {
+        .quick-stats {
+          flex-direction: column;
+        }
+        .stats-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Particle Canvas -->
+    <canvas id="particle-canvas"></canvas>
+    <!-- Flow Light Canvas -->
+    <canvas id="flow-canvas"></canvas>
+
+    <!-- ═══ Navigation ═══ -->
+    <nav class="nav">
+      <div class="nav-inner">
+        <div class="nav-logo">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect
+              x="2"
+              y="2"
+              width="28"
+              height="28"
+              rx="8"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <rect x="8" y="8" width="16" height="16" rx="4" fill="currentColor" opacity="0.3" />
+            <rect x="12" y="12" width="8" height="8" rx="2" fill="currentColor" />
+          </svg>
+          HStack
+        </div>
+        <div class="nav-links">
+          <a href="#apps" class="active">应用</a>
+          <a href="#changelog">日志</a>
+          <a href="#stats">数据</a>
+        </div>
+        <div class="nav-user">
+          <div class="theme-toggle" id="themeToggle" title="切换主题">
+            <svg
+              id="themeIcon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          </div>
+          <div class="nav-avatar">Z</div>
+        </div>
+      </div>
+      <div class="nav-hologram-line"></div>
+    </nav>
+
+    <!-- ═══ Main Content ═══ -->
+    <div class="main">
+      <!-- Welcome -->
+      <div class="welcome">
+        <div class="welcome-row">
+          <div class="welcome-text fade-in-up">
+            <h1>欢迎回来，创造者</h1>
+            <p>这里是你的技术空间，光粒游走在应用之间，流线串联着每一次创造。</p>
+            <div class="welcome-badge"><span class="dot"></span> 3 个应用运行中</div>
+          </div>
+          <div class="quick-stats fade-in-up delay-2">
+            <div class="stat-chip">
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 17l10 5 10-5" />
+                  <path d="M2 12l10 5 10-5" />
+                </svg>
+              </div>
+              <div>
+                <div class="stat-val">12</div>
+                <div class="stat-label">Mock 项目</div>
+              </div>
+            </div>
+            <div class="stat-chip">
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              </div>
+              <div>
+                <div class="stat-val">8</div>
+                <div class="stat-label">看房记录</div>
+              </div>
+            </div>
+            <div class="stat-chip">
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div class="stat-val">24</div>
+                <div class="stat-label">组件数</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ App Cards ═══ -->
+      <div class="section" id="apps">
+        <div class="section-header">
+          <h2 class="section-title fade-in-up">应用中心</h2>
+          <a href="#" class="section-action fade-in-up delay-1"
+            >管理应用
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </a>
+        </div>
+        <div class="app-grid">
+          <!-- Mock Platform -->
+          <div class="app-card fade-in-up delay-1">
+            <div class="scan-edge"></div>
+            <div class="card-header">
+              <div class="icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 17l10 5 10-5" />
+                  <path d="M2 12l10 5 10-5" />
+                </svg>
+              </div>
+              <span class="card-status running">运行中</span>
+            </div>
+            <h3>Mock 平台</h3>
+            <p>
+              可视化接口模拟与数据编排，让前后端协作如光流般顺滑。支持 Swagger 导入、在线 Mock
+              与离线下载。
+            </p>
+            <div class="card-footer">
+              <span class="card-tag">API · 数据</span>
+              <div class="card-arrow">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- House Hunting -->
+          <div class="app-card fade-in-up delay-2">
+            <div class="scan-edge"></div>
+            <div class="card-header">
+              <div class="icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              </div>
+              <span class="card-status active">活跃</span>
+            </div>
+            <h3>看房日志</h3>
+            <p>沉浸式房源记录与对比分析，多维度打分 + 标签系统，每条数据都闪烁着发现的光芒。</p>
+            <div class="card-footer">
+              <span class="card-tag">日志 · 分析</span>
+              <div class="card-arrow">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Component Hub -->
+          <div class="app-card fade-in-up delay-3">
+            <div class="scan-edge"></div>
+            <div class="card-header">
+              <div class="icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+                  />
+                </svg>
+              </div>
+              <span class="card-status dev">开发中</span>
+            </div>
+            <h3>组件中心</h3>
+            <p>
+              统一设计语言与组件库，在线预览、分类浏览、一键安装，每一个组件都带着全息扫描般的精致细节。
+            </p>
+            <div class="card-footer">
+              <span class="card-tag">UI · 规范</span>
+              <div class="card-arrow">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Changelog ═══ -->
+      <div class="section" id="changelog">
+        <div class="section-header">
+          <h2 class="section-title fade-in-up">更新日志</h2>
+          <a href="#" class="section-action fade-in-up delay-1"
+            >查看全部
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </a>
+        </div>
+        <div class="changelog-list">
+          <div class="changelog-item fade-in-up delay-1">
+            <div class="changelog-dot feature"></div>
+            <div class="changelog-body">
+              <h4>新增 Swagger 文档批量导入</h4>
+              <p>支持一次性导入整个 OpenAPI 3.0 文档，自动解析路径、参数与响应结构。</p>
+              <div class="changelog-meta">
+                <span class="changelog-app">Mock 平台</span>
+                <span class="changelog-time">2 小时前</span>
+              </div>
+            </div>
+          </div>
+          <div class="changelog-item fade-in-up delay-2">
+            <div class="changelog-dot feature"></div>
+            <div class="changelog-body">
+              <h4>多房源横向对比视图</h4>
+              <p>新增雷达图 + 表格双视图对比模式，支持自定义权重计算综合评分。</p>
+              <div class="changelog-meta">
+                <span class="changelog-app">看房日志</span>
+                <span class="changelog-time">1 天前</span>
+              </div>
+            </div>
+          </div>
+          <div class="changelog-item fade-in-up delay-3">
+            <div class="changelog-dot refactor"></div>
+            <div class="changelog-body">
+              <h4>设计规范 Token 体系重构</h4>
+              <p>将颜色、间距、字号统一为 CSS 变量 Token，全应用一键切换深浅主题。</p>
+              <div class="changelog-meta">
+                <span class="changelog-app">组件中心</span>
+                <span class="changelog-time">3 天前</span>
+              </div>
+            </div>
+          </div>
+          <div class="changelog-item fade-in-up delay-4">
+            <div class="changelog-dot fix"></div>
+            <div class="changelog-body">
+              <h4>修复微前端子应用路由丢失</h4>
+              <p>解决子应用在 keep-alive 模式下切换时 basename 丢失导致 404 的问题。</p>
+              <div class="changelog-meta">
+                <span class="changelog-app">Main App</span>
+                <span class="changelog-time">5 天前</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Stats ═══ -->
+      <div class="section" id="stats">
+        <div class="section-header">
+          <h2 class="section-title fade-in-up">数据看板</h2>
+          <a href="#" class="section-action fade-in-up delay-1"
+            >详细统计
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </a>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card fade-in-up delay-1">
+            <div class="stat-number">12</div>
+            <div class="stat-name">Mock 项目</div>
+            <div class="stat-trend up">
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+              >
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+              </svg>
+              +3 本周
+            </div>
+            <div class="stat-bar"></div>
+          </div>
+          <div class="stat-card fade-in-up delay-2">
+            <div class="stat-number">47</div>
+            <div class="stat-name">接口总数</div>
+            <div class="stat-trend up">
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+              >
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+              </svg>
+              +12 本周
+            </div>
+            <div class="stat-bar"></div>
+          </div>
+          <div class="stat-card fade-in-up delay-3">
+            <div class="stat-number">8</div>
+            <div class="stat-name">看房记录</div>
+            <div class="stat-trend up">
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+              >
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+              </svg>
+              +2 本周
+            </div>
+            <div class="stat-bar"></div>
+          </div>
+          <div class="stat-card fade-in-up delay-4">
+            <div class="stat-number">24</div>
+            <div class="stat-name">组件数</div>
+            <div class="stat-trend down">
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+              >
+                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+              </svg>
+              -1 本周
+            </div>
+            <div class="stat-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Footer ═══ -->
+    <footer class="footer">
+      <div class="flow-line"></div>
+      HStack 作品集门户 · 轻科幻活力光感
+    </footer>
+
+    <script>
+      // ═══════════ Theme Toggle ═══════════
+      const html = document.documentElement;
+      const toggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+
+      function updateThemeIcon() {
+        const isDark = html.dataset.theme === 'dark';
+        themeIcon.innerHTML = isDark
+          ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+          : '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+      }
+      toggle.addEventListener('click', () => {
+        html.dataset.theme = html.dataset.theme === 'light' ? 'dark' : 'light';
+        updateThemeIcon();
+      });
+
+      // ═══════════ Active Nav ═══════════
+      const navLinks = document.querySelectorAll('.nav-links a');
+      const sections = document.querySelectorAll('.section, .welcome');
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              navLinks.forEach((l) => l.classList.remove('active'));
+              const id = e.target.id;
+              if (id) {
+                const link = document.querySelector(`.nav-links a[href="#${id}"]`);
+                if (link) link.classList.add('active');
+              }
+            }
+          });
+        },
+        { threshold: 0.3 },
+      );
+      sections.forEach((s) => {
+        if (s.id) observer.observe(s);
+      });
+
+      // ═══════════ Particle System ═══════════
+      const pCanvas = document.getElementById('particle-canvas');
+      const pCtx = pCanvas.getContext('2d');
+      let particles = [];
+      let mouseX = -1000,
+        mouseY = -1000;
+
+      function resizeCanvas(c) {
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+      }
+      window.addEventListener('resize', () => {
+        resizeCanvas(pCanvas);
+        resizeCanvas(fCanvas);
+      });
+      resizeCanvas(pCanvas);
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+        reset() {
+          this.x = Math.random() * pCanvas.width;
+          this.y = Math.random() * pCanvas.height;
+          this.size = 1.5 + Math.random() * 2.5;
+          this.speedX = (Math.random() - 0.5) * 0.3;
+          this.speedY = (Math.random() - 0.5) * 0.3;
+          this.opacity = 0.2 + Math.random() * 0.5;
+          this.hue = Math.random() < 0.5 ? 250 : Math.random() < 0.5 ? 190 : 340;
+          this.pulse = Math.random() * Math.PI * 2;
+          this.pulseSpeed = 0.01 + Math.random() * 0.02;
+        }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          this.pulse += this.pulseSpeed;
+          const dx = mouseX - this.x,
+            dy = mouseY - this.y,
+            dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            this.x -= dx * 0.003;
+            this.y -= dy * 0.003;
+          }
+          if (
+            this.x < -20 ||
+            this.x > pCanvas.width + 20 ||
+            this.y < -20 ||
+            this.y > pCanvas.height + 20
+          )
+            this.reset();
+        }
+        draw() {
+          const isDark = html.dataset.theme === 'dark';
+          const alpha = this.opacity * (isDark ? 1 : 0.5) * (0.6 + 0.4 * Math.sin(this.pulse));
+          const sat = isDark ? '80%' : '70%';
+          const lit = isDark ? '70%' : '55%';
+          pCtx.beginPath();
+          pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          pCtx.fillStyle = `hsla(${this.hue},${sat},${lit},${alpha})`;
+          pCtx.fill();
+          if (isDark) {
+            pCtx.beginPath();
+            pCtx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+            pCtx.fillStyle = `hsla(${this.hue},${sat},${lit},${alpha * 0.15})`;
+            pCtx.fill();
+          }
+        }
+      }
+      for (let i = 0; i < 60; i++) particles.push(new Particle());
+      function animateParticles() {
+        pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+        particles.forEach((p) => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(animateParticles);
+      }
+      animateParticles();
+
+      // ═══════════ Flow Light Lines ═══════════
+      const fCanvas = document.getElementById('flow-canvas');
+      const fCtx = fCanvas.getContext('2d');
+      resizeCanvas(fCanvas);
+
+      class FlowLine {
+        constructor() {
+          this.points = [];
+          this.progress = Math.random();
+          this.speed = 0.0003 + Math.random() * 0.0005;
+          this.hue = Math.random() < 0.6 ? 250 : 190;
+          this.width = 1 + Math.random() * 2;
+          this.generatePath();
+        }
+        generatePath() {
+          const w = fCanvas.width,
+            h = fCanvas.height;
+          const startX = Math.random() * w,
+            startY = Math.random() * h;
+          const steps = 6 + Math.floor(Math.random() * 4);
+          this.points = [{ x: startX, y: startY }];
+          for (let i = 1; i < steps; i++) {
+            this.points.push({
+              x: startX + (Math.random() - 0.5) * w * 0.6,
+              y: startY + (Math.random() - 0.5) * h * 0.6,
+            });
+          }
+        }
+        draw() {
+          const isDark = html.dataset.theme === 'dark';
+          const alpha = isDark ? 0.08 : 0.04;
+          const pts = this.points;
+          if (pts.length < 2) return;
+          fCtx.beginPath();
+          fCtx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length - 1; i++) {
+            const cx = (pts[i].x + pts[i + 1].x) / 2,
+              cy = (pts[i].y + pts[i + 1].y) / 2;
+            fCtx.quadraticCurveTo(pts[i].x, pts[i].y, cx, cy);
+          }
+          const sat = isDark ? '80%' : '60%';
+          const lit = isDark ? '65%' : '50%';
+          fCtx.strokeStyle = `hsla(${this.hue},${sat},${lit},${alpha})`;
+          fCtx.lineWidth = this.width;
+          fCtx.lineCap = 'round';
+          fCtx.stroke();
+          this.progress += this.speed;
+          if (this.progress > 1) {
+            this.progress = 0;
+            this.generatePath();
+          }
+          const pos = getPointOnCurve(pts, this.progress);
+          const dotAlpha = isDark ? 0.5 : 0.25;
+          const grad = fCtx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 20);
+          grad.addColorStop(0, `hsla(${this.hue},${sat},${lit},${dotAlpha})`);
+          grad.addColorStop(1, `hsla(${this.hue},${sat},${lit},0)`);
+          fCtx.beginPath();
+          fCtx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+          fCtx.fillStyle = grad;
+          fCtx.fill();
+        }
+      }
+      function getPointOnCurve(pts, t) {
+        const n = pts.length - 1;
+        const i = Math.min(Math.floor(t * n), n - 1);
+        const lt = t * n - i;
+        const p0 = pts[i],
+          p1 = pts[Math.min(i + 1, n)];
+        return { x: p0.x + (p1.x - p0.x) * lt, y: p0.y + (p1.y - p0.y) * lt };
+      }
+      const flowLines = [];
+      for (let i = 0; i < 5; i++) flowLines.push(new FlowLine());
+      function animateFlow() {
+        fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
+        flowLines.forEach((fl) => fl.draw());
+        requestAnimationFrame(animateFlow);
+      }
+      animateFlow();
+
+      // ═══════════ Scroll Reveal ═══════════
+      const scrollObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) e.target.style.animationPlayState = 'running';
+          });
+        },
+        { threshold: 0.1 },
+      );
+      document.querySelectorAll('.fade-in-up').forEach((el) => {
+        el.style.animationPlayState = 'paused';
+        scrollObserver.observe(el);
+      });
+    </script>
+  </body>
+</html>

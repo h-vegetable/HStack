@@ -6,15 +6,25 @@ import { App } from './App';
 import { useGlobalStore } from './stores/global';
 import './styles/global.css';
 
-// Apply persisted theme class to <html> before mount to avoid flicker.
-const initialTheme = useGlobalStore.getState().theme;
-if (initialTheme === 'dark') {
-  document.documentElement.classList.add('dark');
-}
-useGlobalStore.subscribe((state) => {
+// Apply persisted theme to <html> before mount to avoid flicker.
+// Uses dual mechanism: data-theme for CSS custom properties + .dark class for Tailwind/HeroUI.
+function applyTheme(theme: 'light' | 'dark' | 'system') {
+  const resolved =
+    theme === 'system'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light'
+      : theme;
   const html = document.documentElement;
-  if (state.theme === 'dark') html.classList.add('dark');
-  else html.classList.remove('dark');
+  html.setAttribute('data-theme', resolved);
+  html.classList.toggle('dark', resolved === 'dark');
+}
+
+const initialTheme = useGlobalStore.getState().theme;
+applyTheme(initialTheme);
+
+useGlobalStore.subscribe((state) => {
+  applyTheme(state.theme);
 });
 
 // Initialise micro-app sandbox.

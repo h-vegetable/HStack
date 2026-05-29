@@ -7,7 +7,7 @@
 - **包管理**：pnpm 10 + Turborepo 2
 - **前端**：React 18 · Vite 5 · TypeScript 5 · TailwindCSS 3 · HeroUI · Zustand · react-router 6 · i18next
 - **微前端**：@micro-zoe/micro-app
-- **后端**（待建）：NestJS + TypeORM + PostgreSQL
+- **后端**（待建）：NestJS + TypeORM + PostgreSQL（模块化单体）
 - **工程化**：ESLint 9 (Flat) · Prettier · Husky · lint-staged · commitlint · Changesets
 - **监控**（待接）：Sentry
 
@@ -38,7 +38,7 @@ HStack/
 │   └── shared-ui/             # HeroUI 薄封装 + metadata
 │
 ├── .agent/documents/
-│   ├── outline.html           # 架构设计文档（rev.2）
+│   ├── outline.html           # 架构设计文档（rev.4）
 │   └── outline.md             # 原始需求
 │
 ├── .changeset/                # 版本管理
@@ -81,6 +81,7 @@ pnpm format
 | 类型分层   | shared-types 仅放横切；DTO 就近放 `apps/api/src/modules/{domain}/dto`（保持纯 type，校验拆 `*.validator.ts`） | 避免一动全重建，避免装饰器污染前端 bundle         |
 | 微前端通信 | micro-app `data` 桥（基座下发 + 子应用 dispatch 上行）                                                        | 事件命名 `领域:动作`                              |
 | 样式       | shared-styles（零依赖 Token + CSS）← shared-ui                                                                | 子应用可单独消费样式                              |
+| 后端架构   | **模块化单体**（Modular Monolith）                                                                            | 代码按微服务标准划边界，运行单体；未来可渐进拆分  |
 
 详见 [outline.html](./.agent/documents/outline.html)。
 

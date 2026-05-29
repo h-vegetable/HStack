@@ -1,46 +1,143 @@
-/* HStack global stylesheet — design tokens + base layer. */
+/* ═══════════════════════════════════════════════════════════════════
+   HStack Global Stylesheet — 轻科幻·活力光感
+   Design tokens + base layer + animations + sci-fi effect components.
+   @see .agent/designs/design-spec.md for the full visual specification.
+   ═══════════════════════════════════════════════════════════════════ */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── @property for animated conic-gradient (scan-edge) ─── */
+@property --hs-scan-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   1. Theme Tokens — Light
+   ═══════════════════════════════════════════════════════════════════ */
+[data-theme='light'],
 :root {
-  --hs-color-brand: #4a6aff;
-  --hs-color-bg: #ffffff;
-  --hs-color-fg: #0f172a;
-  --hs-color-border: #e2e8f0;
-  --hs-color-muted: #64748b;
-  --hs-radius-md: 8px;
-  --hs-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.06);
+  /* background */
+  --hs-bg-start: #f5f3ff;
+  --hs-bg-end: #edf2ff;
+  --hs-bg: var(--hs-bg-start);
+
+  /* card / panel */
+  --hs-card-bg: rgba(255, 255, 255, 0.55);
+  --hs-card-border: rgba(93, 95, 239, 0.12);
+  --hs-card-shadow: 0 8px 32px rgba(93, 95, 239, 0.1), 0 0 60px rgba(93, 95, 239, 0.05);
+
+  /* primary / secondary / accent */
+  --hs-primary: #5d5fef;
+  --hs-primary-glow: rgba(93, 95, 239, 0.35);
+  --hs-secondary: #00d2ff;
+  --hs-secondary-glow: rgba(0, 210, 255, 0.25);
+  --hs-accent: #ff7a9e;
+  --hs-accent-glow: rgba(255, 122, 158, 0.3);
+
+  /* text */
+  --hs-text: #1e1e2f;
+  --hs-text-secondary: #4a4a6a;
+  --hs-text-muted: #8e8ea0;
+
+  /* input */
+  --hs-input-bg: rgba(255, 255, 255, 0.5);
+  --hs-input-border: rgba(93, 95, 239, 0.25);
+
+  /* nav */
+  --hs-nav-bg: rgba(245, 243, 255, 0.72);
+
+  /* scan-edge */
+  --hs-scan-color: rgba(93, 95, 239, 0.5);
+  --hs-scan-glow: rgba(93, 95, 239, 0.15);
+
+  /* table */
+  --hs-table-hover: rgba(93, 95, 239, 0.06);
+  --hs-table-selected: rgba(93, 95, 239, 0.12);
+
+  /* overlay / badge */
+  --hs-overlay: rgba(237, 242, 255, 0.6);
+  --hs-badge-bg: rgba(93, 95, 239, 0.08);
+
+  /* transitions */
+  --hs-transition-bg: 0.6s ease;
+  --hs-transition-text: 0.4s ease;
 }
 
-.dark {
-  --hs-color-brand: #6a8eff;
-  --hs-color-bg: #0a0f1d;
-  --hs-color-fg: #f8fafc;
-  --hs-color-border: #1e293b;
-  --hs-color-muted: #94a3b8;
-  --hs-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.4);
+/* ═══════════════════════════════════════════════════════════════════
+   2. Theme Tokens — Dark
+   ═══════════════════════════════════════════════════════════════════ */
+[data-theme='dark'] {
+  --hs-bg-start: #0f0a1e;
+  --hs-bg-end: #1a1035;
+  --hs-bg: var(--hs-bg-start);
+
+  --hs-card-bg: rgba(30, 22, 60, 0.6);
+  --hs-card-border: rgba(133, 130, 255, 0.18);
+  --hs-card-shadow: 0 8px 32px rgba(133, 130, 255, 0.12), 0 0 60px rgba(58, 224, 217, 0.06);
+
+  --hs-primary: #8582ff;
+  --hs-primary-glow: rgba(133, 130, 255, 0.4);
+  --hs-secondary: #3ae0d9;
+  --hs-secondary-glow: rgba(58, 224, 217, 0.3);
+  --hs-accent: #ff6b8b;
+  --hs-accent-glow: rgba(255, 107, 139, 0.35);
+
+  --hs-text: #ede9ff;
+  --hs-text-secondary: #b8b0d4;
+  --hs-text-muted: #7a7294;
+
+  --hs-input-bg: rgba(30, 22, 60, 0.4);
+  --hs-input-border: rgba(133, 130, 255, 0.3);
+
+  --hs-nav-bg: rgba(15, 10, 30, 0.78);
+
+  --hs-scan-color: rgba(133, 130, 255, 0.7);
+  --hs-scan-glow: rgba(58, 224, 217, 0.2);
+
+  --hs-table-hover: rgba(58, 224, 217, 0.06);
+  --hs-table-selected: rgba(133, 130, 255, 0.15);
+
+  --hs-overlay: rgba(15, 10, 30, 0.7);
+  --hs-badge-bg: rgba(133, 130, 255, 0.12);
+
+  --hs-transition-bg: 0.6s ease;
+  --hs-transition-text: 0.4s ease;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   3. Base Layer
+   ═══════════════════════════════════════════════════════════════════ */
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   html,
   body,
   #root {
     height: 100%;
   }
 
+  html {
+    transition:
+      background var(--hs-transition-bg),
+      color var(--hs-transition-text);
+  }
+
   body {
-    background-color: var(--hs-color-bg);
-    color: var(--hs-color-fg);
+    background: linear-gradient(135deg, var(--hs-bg-start), var(--hs-bg-end));
+    background-attachment: fixed;
+    color: var(--hs-text);
     font-family:
-      Inter,
+      'Quicksand',
       system-ui,
       -apple-system,
-      'Segoe UI',
-      Roboto,
-      'Helvetica Neue',
-      Arial,
       'PingFang SC',
       'Microsoft YaHei',
       sans-serif;
@@ -48,9 +145,247 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Rajdhani', 'Quicksand', system-ui, sans-serif;
+    letter-spacing: 0.02em;
+    color: var(--hs-text);
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   4. Keyframe Animations
+   ═══════════════════════════════════════════════════════════════════ */
+
+/** Breathe glow — soft pulse for dots, badges, selected indicators */
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/** Scan-edge — conic-gradient rotation for card borders */
+@keyframes scanEdge {
+  to {
+    --hs-scan-angle: 360deg;
+  }
+}
+
+/** Hologram line — subtle pulse for nav separator */
+@keyframes holoLine {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scaleX(0.8);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scaleX(1);
+  }
+}
+
+/** Light descend — vertical sweep for drawer light bar */
+@keyframes lightDescend {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(20px);
+  }
+}
+
+/** Fade-in-up — element entrance */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   5. Sci-Fi Effect Components
+   These are NOT covered by HeroUI — they provide the "轻科幻" feel.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── 5.1 Scan-edge (rotating light on card border) ─── */
+.hs-scan-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--hs-scan-angle, 0deg),
+    transparent 0%,
+    var(--hs-scan-color) 8%,
+    transparent 16%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1.5px;
+  animation: scanEdge 5s linear infinite;
+}
+
+/* slower variant for larger panels */
+.hs-scan-edge-slow {
+  animation-duration: 6s;
+}
+
+/* ─── 5.2 Hologram line (nav separator) ─── */
+.hs-hologram-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hs-primary) 30%,
+    var(--hs-secondary) 70%,
+    transparent 100%
+  );
+  opacity: 0.5;
+  animation: holoLine 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* ─── 5.3 Glow dot (decorative breathing indicator) ─── */
+.hs-glow-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hs-primary);
+  box-shadow: 0 0 10px var(--hs-primary-glow);
+  animation: breathe 2s ease-in-out infinite;
+}
+
+/* ─── 5.4 Gradient text (headings) ─── */
+.hs-gradient-text {
+  background: linear-gradient(135deg, var(--hs-primary), var(--hs-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── 5.5 Glass card (base glassmorphism) ─── */
+.hs-glass {
+  background: var(--hs-card-bg);
+  border: 1px solid var(--hs-card-border);
+  border-radius: 20px;
+  box-shadow: var(--hs-card-shadow);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+
+/* ─── 5.6 Drawer light bar (vertical sweep line) ─── */
+.hs-drawer-light-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--hs-primary), var(--hs-secondary), var(--hs-accent));
+  animation: lightDescend 2s ease-in-out infinite;
+}
+
+/* ─── 5.7 Dialog header line (gradient divider) ─── */
+.hs-dialog-header-line {
+  height: 3px;
+  background: linear-gradient(90deg, var(--hs-primary), var(--hs-secondary), var(--hs-accent));
+}
+
+/* ─── 5.8 Table selected-row indicator ─── */
+.hs-row-indicator {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: linear-gradient(180deg, var(--hs-primary), var(--hs-secondary));
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--hs-primary-glow);
+  animation: breathe 2s ease-in-out infinite;
+}
+
+/* ─── 5.9 Fade-in-up entrance ─── */
+.hs-fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* staggered children */
+.hs-fade-in-up-stagger > * {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+}
+.hs-fade-in-up-stagger > *:nth-child(1) {
+  animation-delay: 0s;
+}
+.hs-fade-in-up-stagger > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.hs-fade-in-up-stagger > *:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.hs-fade-in-up-stagger > *:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.hs-fade-in-up-stagger > *:nth-child(5) {
+  animation-delay: 0.4s;
+}
+.hs-fade-in-up-stagger > *:nth-child(6) {
+  animation-delay: 0.5s;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   6. Utility Classes
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* backdrop blur for nav / overlays */
+.hs-backdrop-blur {
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
+
+/* badge / tag background */
+.hs-badge {
+  background: var(--hs-badge-bg);
+  color: var(--hs-primary);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* icon container */
+.hs-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--hs-primary-glow), var(--hs-scan-glow));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

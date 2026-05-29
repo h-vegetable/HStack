@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HStack 登录 · 轻科幻活力光感</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ═══════════════ Theme Variables ═══════════════ */
+      [data-theme='light'] {
+        --bg-start: #f5f3ff;
+        --bg-end: #edf2ff;
+        --card-bg: rgba(255, 255, 255, 0.55);
+        --card-border: rgba(93, 95, 239, 0.12);
+        --card-shadow: 0 8px 32px rgba(93, 95, 239, 0.1), 0 0 60px rgba(93, 95, 239, 0.05);
+        --primary: #5d5fef;
+        --primary-glow: rgba(93, 95, 239, 0.35);
+        --secondary: #00d2ff;
+        --accent: #ff7a9e;
+        --text: #1e1e2f;
+        --text-secondary: #4a4a6a;
+        --text-muted: #8e8ea0;
+        --input-bg: rgba(255, 255, 255, 0.5);
+        --input-border: rgba(93, 95, 239, 0.25);
+        --nav-bg: rgba(245, 243, 255, 0.72);
+        --scan-color: rgba(93, 95, 239, 0.5);
+        --scan-glow: rgba(93, 95, 239, 0.15);
+        --particle-alpha: 0.3;
+        --flow-alpha: 0.06;
+        --overlay: rgba(237, 242, 255, 0.6);
+        --badge-bg: rgba(93, 95, 239, 0.08);
+      }
+      [data-theme='dark'] {
+        --bg-start: #0f0a1e;
+        --bg-end: #1a1035;
+        --card-bg: rgba(30, 22, 60, 0.6);
+        --card-border: rgba(133, 130, 255, 0.18);
+        --card-shadow: 0 8px 32px rgba(133, 130, 255, 0.12), 0 0 60px rgba(58, 224, 217, 0.06);
+        --primary: #8582ff;
+        --primary-glow: rgba(133, 130, 255, 0.4);
+        --secondary: #3ae0d9;
+        --accent: #ff6b8b;
+        --text: #ede9ff;
+        --text-secondary: #b8b0d4;
+        --text-muted: #7a7294;
+        --input-bg: rgba(30, 22, 60, 0.4);
+        --input-border: rgba(133, 130, 255, 0.3);
+        --nav-bg: rgba(15, 10, 30, 0.78);
+        --scan-color: rgba(133, 130, 255, 0.7);
+        --scan-glow: rgba(58, 224, 217, 0.2);
+        --particle-alpha: 0.6;
+        --flow-alpha: 0.1;
+        --overlay: rgba(15, 10, 30, 0.7);
+        --badge-bg: rgba(133, 130, 255, 0.12);
+      }
+
+      /* ═══════════════ Reset & Base ═══════════════ */
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: 'Quicksand', system-ui, sans-serif;
+        background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        color: var(--text);
+        min-height: 100vh;
+        overflow: hidden;
+        transition:
+          background 0.6s ease,
+          color 0.4s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: 'Rajdhani', 'Quicksand', sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+      a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+
+      /* ═══════════════ Canvas Layers ═══════════════ */
+      #particle-canvas,
+      #flow-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ═══════════════ Login Container ═══════════════ */
+      .login-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 440px;
+        padding: 0 24px;
+        animation: fadeInUp 0.8s ease both;
+      }
+      .login-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px) saturate(1.3);
+        -webkit-backdrop-filter: blur(20px) saturate(1.3);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 44px 40px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+      }
+      .login-card .scan-edge {
+        position: absolute;
+        inset: 0;
+        border-radius: 24px;
+        pointer-events: none;
+        background: conic-gradient(
+          from var(--scan-angle, 0deg),
+          transparent 0%,
+          var(--scan-color) 8%,
+          transparent 16%
+        );
+        -webkit-mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        padding: 1.5px;
+        animation: scanEdge 5s linear infinite;
+      }
+      @keyframes scanEdge {
+        to {
+          --scan-angle: 360deg;
+        }
+      }
+      @property --scan-angle {
+        syntax: '<angle>';
+        initial-value: 0deg;
+        inherits: false;
+      }
+
+      /* ═══════════════ Brand Header ═══════════════ */
+      .brand {
+        text-align: center;
+        margin-bottom: 36px;
+      }
+      .brand-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, var(--primary-glow), var(--scan-glow));
+        box-shadow: 0 0 30px var(--primary-glow);
+        position: relative;
+      }
+      .brand-logo svg {
+        width: 32px;
+        height: 32px;
+        color: var(--primary);
+      }
+      .brand-logo .logo-glow {
+        position: absolute;
+        inset: -4px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        opacity: 0.15;
+        filter: blur(8px);
+        animation: breathe 3s ease-in-out infinite;
+      }
+      .brand h1 {
+        font-size: 28px;
+        margin-bottom: 6px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .brand p {
+        font-size: 14px;
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+
+      /* ═══════════════ Form ═══════════════ */
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .field-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .field-label .dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--primary);
+        animation: breathe 2s ease-in-out infinite;
+      }
+      .hstack-input {
+        padding: 13px 16px;
+        border-radius: 12px;
+        border: 1.5px solid var(--input-border);
+        background: var(--input-bg);
+        backdrop-filter: blur(8px);
+        font-family: 'Quicksand', sans-serif;
+        font-size: 14px;
+        color: var(--text);
+        outline: none;
+        transition: all 0.3s ease;
+      }
+      .hstack-input::placeholder {
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 300;
+      }
+      .hstack-input:focus {
+        border-color: var(--primary);
+        box-shadow:
+          0 0 16px var(--primary-glow),
+          inset 0 0 8px var(--scan-glow);
+      }
+      .input-icon-wrap {
+        position: relative;
+      }
+      .input-icon-wrap .hstack-input {
+        padding-left: 42px;
+        width: 100%;
+      }
+      .input-icon-wrap .input-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        transition: color 0.3s;
+      }
+      .input-icon-wrap:focus-within .input-icon {
+        color: var(--primary);
+      }
+
+      /* ═══════════════ Options Row ═══════════════ */
+      .options-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+      }
+      .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        color: var(--text-secondary);
+      }
+      .remember-me input[type='checkbox'] {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        border: 1.5px solid var(--input-border);
+        background: var(--input-bg);
+        cursor: pointer;
+        accent-color: var(--primary);
+      }
+      .forgot-link {
+        color: var(--primary);
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+      .forgot-link:hover {
+        color: var(--secondary);
+      }
+
+      /* ═══════════════ Buttons ═══════════════ */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 13px 28px;
+        border-radius: 14px;
+        font-family: 'Quicksand', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .btn:active {
+        transform: scale(0.96);
+      }
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          color-mix(in srgb, var(--primary), var(--secondary) 30%)
+        );
+        color: #fff;
+        box-shadow: 0 4px 20px var(--primary-glow);
+        width: 100%;
+      }
+      .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -60%;
+        width: 40%;
+        height: 200%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+        transform: skewX(-20deg);
+        transition: left 0.6s ease;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px var(--primary-glow);
+      }
+      .btn-primary:hover::before {
+        left: 120%;
+      }
+
+      /* ═══════════════ Divider ═══════════════ */
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 4px 0;
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+      .divider::before,
+      .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--card-border), transparent);
+      }
+
+      /* ═══════════════ OAuth Buttons ═══════════════ */
+      .oauth-row {
+        display: flex;
+        gap: 12px;
+      }
+      .oauth-btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1.5px solid var(--input-border);
+        background: var(--input-bg);
+        backdrop-filter: blur(8px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: 'Quicksand', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .oauth-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        box-shadow: 0 0 16px var(--primary-glow);
+        transform: translateY(-2px);
+      }
+      .oauth-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* ═══════════════ Footer ═══════════════ */
+      .login-footer {
+        text-align: center;
+        margin-top: 28px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .login-footer a {
+        color: var(--primary);
+        font-weight: 600;
+      }
+      .login-footer a:hover {
+        color: var(--secondary);
+      }
+
+      /* ═══════════════ Theme Toggle ═══════════════ */
+      .theme-toggle-float {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 100;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        border: 1.5px solid var(--input-border);
+        background: var(--input-bg);
+        backdrop-filter: blur(12px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+      .theme-toggle-float:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 16px var(--primary-glow);
+      }
+      .theme-toggle-float svg {
+        width: 20px;
+        height: 20px;
+        color: var(--primary);
+        transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      }
+      .theme-toggle-float:hover svg {
+        transform: rotate(180deg);
+      }
+
+      /* ═══════════════ Decorative Corner ═══════════════ */
+      .corner-glow {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.15;
+        pointer-events: none;
+      }
+      .corner-glow.tl {
+        top: -40px;
+        left: -40px;
+        background: var(--primary);
+      }
+      .corner-glow.br {
+        bottom: -40px;
+        right: -40px;
+        background: var(--secondary);
+      }
+
+      /* ═══════════════ Error State ═══════════════ */
+      .hstack-input.error {
+        border-color: var(--accent);
+        box-shadow: 0 0 12px rgba(255, 122, 158, 0.2);
+      }
+      .field-error {
+        font-size: 12px;
+        color: var(--accent);
+        display: none;
+        align-items: center;
+        gap: 4px;
+      }
+      .field-error.visible {
+        display: flex;
+      }
+
+      /* ═══════════════ Password Toggle ═══════════════ */
+      .pw-toggle {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 4px;
+        transition: color 0.2s;
+      }
+      .pw-toggle:hover {
+        color: var(--primary);
+      }
+      .pw-toggle svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* ═══════════════ Animations ═══════════════ */
+      @keyframes breathe {
+        0%,
+        100% {
+          opacity: 0.6;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.15);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes shimmer {
+        0% {
+          background-position: -200% center;
+        }
+        100% {
+          background-position: 200% center;
+        }
+      }
+
+      /* ═══════════════ Responsive ═══════════════ */
+      @media (max-width: 480px) {
+        .login-card {
+          padding: 32px 24px;
+        }
+        .brand h1 {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Particle Canvas -->
+    <canvas id="particle-canvas"></canvas>
+    <!-- Flow Light Canvas -->
+    <canvas id="flow-canvas"></canvas>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle-float" id="themeToggle" title="切换主题">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5" />
+        <line x1="12" y1="1" x2="12" y2="3" />
+        <line x1="12" y1="21" x2="12" y2="23" />
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+        <line x1="1" y1="12" x2="3" y2="12" />
+        <line x1="21" y1="12" x2="23" y2="12" />
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+      </svg>
+    </button>
+
+    <!-- ═══ Login Card ═══ -->
+    <div class="login-wrapper">
+      <div class="login-card">
+        <div class="scan-edge"></div>
+        <div class="corner-glow tl"></div>
+        <div class="corner-glow br"></div>
+
+        <!-- Brand -->
+        <div class="brand">
+          <div class="brand-logo">
+            <div class="logo-glow"></div>
+            <svg viewBox="0 0 32 32" fill="none">
+              <rect
+                x="2"
+                y="2"
+                width="28"
+                height="28"
+                rx="8"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <rect x="8" y="8" width="16" height="16" rx="4" fill="currentColor" opacity="0.3" />
+              <rect x="12" y="12" width="8" height="8" rx="2" fill="currentColor" />
+            </svg>
+          </div>
+          <h1>HStack</h1>
+          <p>轻科幻 · 创造者空间</p>
+        </div>
+
+        <!-- Form -->
+        <form class="login-form" onsubmit="handleLogin(event)">
+          <div class="field">
+            <label class="field-label"><span class="dot"></span> 邮箱</label>
+            <div class="input-icon-wrap">
+              <svg
+                class="input-icon"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <polyline points="22,4 12,13 2,4" />
+              </svg>
+              <input
+                class="hstack-input"
+                id="emailInput"
+                type="email"
+                placeholder="your@email.com"
+                autocomplete="email"
+              />
+            </div>
+            <span class="field-error" id="emailError">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              请输入有效的邮箱地址
+            </span>
+          </div>
+
+          <div class="field">
+            <label class="field-label"><span class="dot"></span> 密码</label>
+            <div class="input-icon-wrap">
+              <svg
+                class="input-icon"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <input
+                class="hstack-input"
+                id="pwInput"
+                type="password"
+                placeholder="输入密码"
+                autocomplete="current-password"
+              />
+              <button type="button" class="pw-toggle" onclick="togglePw()">
+                <svg
+                  id="pwIcon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+            <span class="field-error" id="pwError">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              密码不能为空
+            </span>
+          </div>
+
+          <div class="options-row">
+            <label class="remember-me"> <input type="checkbox" checked /> 记住我 </label>
+            <a href="#" class="forgot-link">忘记密码？</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+            登录
+          </button>
+
+          <div class="divider">或者</div>
+
+          <div class="oauth-row">
+            <button type="button" class="oauth-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"
+                />
+              </svg>
+              GitHub
+            </button>
+            <button type="button" class="oauth-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                  fill="#4285F4"
+                />
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  fill="#34A853"
+                />
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  fill="#FBBC05"
+                />
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  fill="#EA4335"
+                />
+              </svg>
+              Google
+            </button>
+          </div>
+        </form>
+
+        <div class="login-footer">还没有账号？ <a href="#">注册一个</a></div>
+      </div>
+    </div>
+
+    <script>
+      // ═══════════ Theme Toggle ═══════════
+      const html = document.documentElement;
+      const toggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+
+      function updateThemeIcon() {
+        const isDark = html.dataset.theme === 'dark';
+        themeIcon.innerHTML = isDark
+          ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+          : '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+      }
+      toggle.addEventListener('click', () => {
+        html.dataset.theme = html.dataset.theme === 'light' ? 'dark' : 'light';
+        updateThemeIcon();
+      });
+
+      // ═══════════ Password Toggle ═══════════
+      function togglePw() {
+        const input = document.getElementById('pwInput');
+        const icon = document.getElementById('pwIcon');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.innerHTML =
+            '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+        } else {
+          input.type = 'password';
+          icon.innerHTML =
+            '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+        }
+      }
+
+      // ═══════════ Form Validation ═══════════
+      function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('emailInput');
+        const pw = document.getElementById('pwInput');
+        const emailErr = document.getElementById('emailError');
+        const pwErr = document.getElementById('pwError');
+        let valid = true;
+
+        if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+          email.classList.add('error');
+          emailErr.classList.add('visible');
+          valid = false;
+        } else {
+          email.classList.remove('error');
+          emailErr.classList.remove('visible');
+        }
+
+        if (!pw.value) {
+          pw.classList.add('error');
+          pwErr.classList.add('visible');
+          valid = false;
+        } else {
+          pw.classList.remove('error');
+          pwErr.classList.remove('visible');
+        }
+
+        if (valid) {
+          const btn = e.target.querySelector('.btn-primary');
+          btn.innerHTML =
+            '<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> 登录中…';
+          btn.style.pointerEvents = 'none';
+          setTimeout(() => {
+            btn.innerHTML =
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 登录成功';
+            btn.style.background = 'linear-gradient(135deg, var(--secondary), var(--primary))';
+          }, 1500);
+        }
+      }
+
+      // ═══════════ Particle System ═══════════
+      const pCanvas = document.getElementById('particle-canvas');
+      const pCtx = pCanvas.getContext('2d');
+      let particles = [];
+      let mouseX = -1000,
+        mouseY = -1000;
+
+      function resizeCanvas(c) {
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+      }
+      window.addEventListener('resize', () => {
+        resizeCanvas(pCanvas);
+        resizeCanvas(fCanvas);
+      });
+      resizeCanvas(pCanvas);
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+        reset() {
+          this.x = Math.random() * pCanvas.width;
+          this.y = Math.random() * pCanvas.height;
+          this.size = 1.5 + Math.random() * 2.5;
+          this.speedX = (Math.random() - 0.5) * 0.3;
+          this.speedY = (Math.random() - 0.5) * 0.3;
+          this.opacity = 0.2 + Math.random() * 0.5;
+          this.hue = Math.random() < 0.5 ? 250 : Math.random() < 0.5 ? 190 : 340;
+          this.pulse = Math.random() * Math.PI * 2;
+          this.pulseSpeed = 0.01 + Math.random() * 0.02;
+        }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          this.pulse += this.pulseSpeed;
+          const dx = mouseX - this.x,
+            dy = mouseY - this.y,
+            dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            this.x -= dx * 0.003;
+            this.y -= dy * 0.003;
+          }
+          if (
+            this.x < -20 ||
+            this.x > pCanvas.width + 20 ||
+            this.y < -20 ||
+            this.y > pCanvas.height + 20
+          )
+            this.reset();
+        }
+        draw() {
+          const isDark = html.dataset.theme === 'dark';
+          const alpha = this.opacity * (isDark ? 1 : 0.5) * (0.6 + 0.4 * Math.sin(this.pulse));
+          const sat = isDark ? '80%' : '70%';
+          const lit = isDark ? '70%' : '55%';
+          pCtx.beginPath();
+          pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          pCtx.fillStyle = `hsla(${this.hue},${sat},${lit},${alpha})`;
+          pCtx.fill();
+          if (isDark) {
+            pCtx.beginPath();
+            pCtx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+            pCtx.fillStyle = `hsla(${this.hue},${sat},${lit},${alpha * 0.15})`;
+            pCtx.fill();
+          }
+        }
+      }
+      for (let i = 0; i < 50; i++) particles.push(new Particle());
+      function animateParticles() {
+        pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+        particles.forEach((p) => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(animateParticles);
+      }
+      animateParticles();
+
+      // ═══════════ Flow Light Lines ═══════════
+      const fCanvas = document.getElementById('flow-canvas');
+      const fCtx = fCanvas.getContext('2d');
+      resizeCanvas(fCanvas);
+
+      class FlowLine {
+        constructor() {
+          this.points = [];
+          this.progress = Math.random();
+          this.speed = 0.0003 + Math.random() * 0.0005;
+          this.hue = Math.random() < 0.6 ? 250 : 190;
+          this.width = 1 + Math.random() * 2;
+          this.generatePath();
+        }
+        generatePath() {
+          const w = fCanvas.width,
+            h = fCanvas.height;
+          const startX = Math.random() * w,
+            startY = Math.random() * h;
+          const steps = 6 + Math.floor(Math.random() * 4);
+          this.points = [{ x: startX, y: startY }];
+          for (let i = 1; i < steps; i++) {
+            this.points.push({
+              x: startX + (Math.random() - 0.5) * w * 0.6,
+              y: startY + (Math.random() - 0.5) * h * 0.6,
+            });
+          }
+        }
+        draw() {
+          const isDark = html.dataset.theme === 'dark';
+          const alpha = isDark ? 0.08 : 0.04;
+          const pts = this.points;
+          if (pts.length < 2) return;
+          fCtx.beginPath();
+          fCtx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length - 1; i++) {
+            const cx = (pts[i].x + pts[i + 1].x) / 2,
+              cy = (pts[i].y + pts[i + 1].y) / 2;
+            fCtx.quadraticCurveTo(pts[i].x, pts[i].y, cx, cy);
+          }
+          const sat = isDark ? '80%' : '60%';
+          const lit = isDark ? '65%' : '50%';
+          fCtx.strokeStyle = `hsla(${this.hue},${sat},${lit},${alpha})`;
+          fCtx.lineWidth = this.width;
+          fCtx.lineCap = 'round';
+          fCtx.stroke();
+          this.progress += this.speed;
+          if (this.progress > 1) {
+            this.progress = 0;
+            this.generatePath();
+          }
+          const pos = getPointOnCurve(pts, this.progress);
+          const dotAlpha = isDark ? 0.5 : 0.25;
+          const grad = fCtx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 20);
+          grad.addColorStop(0, `hsla(${this.hue},${sat},${lit},${dotAlpha})`);
+          grad.addColorStop(1, `hsla(${this.hue},${sat},${lit},0)`);
+          fCtx.beginPath();
+          fCtx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+          fCtx.fillStyle = grad;
+          fCtx.fill();
+        }
+      }
+      function getPointOnCurve(pts, t) {
+        const n = pts.length - 1;
+        const i = Math.min(Math.floor(t * n), n - 1);
+        const lt = t * n - i;
+        const p0 = pts[i],
+          p1 = pts[Math.min(i + 1, n)];
+        return { x: p0.x + (p1.x - p0.x) * lt, y: p0.y + (p1.y - p0.y) * lt };
+      }
+      const flowLines = [];
+      for (let i = 0; i < 4; i++) flowLines.push(new FlowLine());
+      function animateFlow() {
+        fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
+        flowLines.forEach((fl) => fl.draw());
+        requestAnimationFrame(animateFlow);
+      }
+      animateFlow();
+    </script>
+  </body>
+</html>

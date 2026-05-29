@@ -122,33 +122,128 @@
       }
 
       /* ====== Tree ====== */
-      .tree {
+      .file-tree {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 12px;
         padding: 24px 28px;
         overflow-x: auto;
-      }
-      .tree-line {
-        white-space: pre;
         font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
-        font-size: 0.88rem;
-        line-height: 2;
+        font-size: 0.85rem;
+        line-height: 1.8;
       }
-      .tree-line .dir {
+      .file-tree ul {
+        list-style: none;
+        padding-left: 24px;
+        margin: 0;
+        position: relative;
+      }
+      .file-tree > ul {
+        padding-left: 0;
+      }
+      /* vertical line */
+      .file-tree ul::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 12px;
+        width: 1px;
+        background: var(--border);
+      }
+      .file-tree > ul::before {
+        display: none;
+      }
+      .file-tree li {
+        position: relative;
+        padding: 1px 0;
+      }
+      /* horizontal branch */
+      .file-tree ul > li::before {
+        content: '';
+        position: absolute;
+        left: -14px;
+        top: 14px;
+        width: 12px;
+        height: 1px;
+        background: var(--border);
+      }
+      .file-tree .ft-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: default;
+        border-radius: 4px;
+        padding: 0 4px;
+        transition: background 0.15s;
+      }
+      .file-tree .ft-item:hover {
+        background: rgba(108, 92, 231, 0.06);
+      }
+      .file-tree .ft-icon {
+        font-size: 0.95rem;
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+      .file-tree .ft-dir {
         color: var(--accent2);
         font-weight: 600;
       }
-      .tree-line .file {
+      .file-tree .ft-file {
         color: var(--text);
       }
-      .tree-line .conn {
-        color: var(--border);
-      }
-      .tree-line .comment {
+      .file-tree .ft-comment {
         color: var(--text-dim);
         font-style: italic;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
+        margin-left: 8px;
+      }
+      .file-tree .ft-section {
+        color: var(--orange);
+        font-weight: 700;
+        font-size: 0.78rem;
+        letter-spacing: 0.5px;
+      }
+      .file-tree .ft-new {
+        color: var(--accent2);
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 4px;
+      }
+      /* collapsible folder */
+      .file-tree .ft-folder {
+        cursor: pointer;
+        user-select: none;
+      }
+      .file-tree .ft-folder .ft-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        font-size: 0.65rem;
+        color: var(--text-dim);
+        border-radius: 3px;
+        transition:
+          transform 0.2s,
+          background 0.15s;
+        flex-shrink: 0;
+      }
+      .file-tree .ft-folder:hover .ft-toggle {
+        background: var(--border);
+      }
+      .file-tree .ft-folder.collapsed .ft-toggle {
+        transform: rotate(-90deg);
+      }
+      .file-tree .ft-folder.collapsed + ul {
+        display: none;
+      }
+      .file-tree .ft-folder-icon {
+        font-size: 0.95rem;
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
       }
 
       /* ====== Card Grid ====== */
@@ -463,6 +558,10 @@
             <div class="arch-box shared">shared-types</div>
             <div class="arch-box shared">shared-styles</div>
             <div class="arch-box shared">shared-i18n</div>
+            <div class="arch-box shared">api-client</div>
+          </div>
+          <div style="margin: 8px 0; color: var(--text-dim); font-size: 0.75rem">
+            ↕ api-client 桥接共享层与后端，隔离前后端类型依赖
           </div>
           <div style="margin: 14px 0; color: var(--text-dim); font-size: 0.8rem">
             &#9660; 调用 &#9660;
@@ -487,605 +586,885 @@
       <!-- ====== 完整目录树 ====== -->
       <div class="section">
         <div class="section-title">完整目录结构</div>
-        <div class="tree">
-          <div class="tree-line">
-            <span class="dir">HStack/</span> <span class="comment"> # 项目根目录</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">pnpm-workspace.yaml</span>
-            <span class="comment"> # pnpm monorepo 工作区配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">turbo.json</span>
-            <span class="comment"> # Turborepo 构建流水线配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">package.json</span>
-            <span class="comment"> # 根 package.json (workspace 脚本)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">.gitignore</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">tsconfig.base.json</span>
-            <span class="comment"> # 共享 TypeScript 基础配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">.eslintrc.base.js</span>
-            <span class="comment"> # 共享 ESLint 基础配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">.prettierrc</span>
-            <span class="comment"> # 共享 Prettier 配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">.lintstagedrc.json</span>
-            <span class="comment"> # lint-staged 规则</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">commitlint.config.cjs</span>
-            <span class="comment"> # 提交信息规范</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="dir">.husky/</span>
-            <span class="comment"> # Git 钩子 (pre-commit / commit-msg)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="dir">.changeset/</span>
-            <span class="comment"> # Changesets 版本管理</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">.env.example</span>
-            <span class="comment"> # 根环境变量模板</span>
-          </div>
-          <div class="tree-line"><span class="conn">│</span></div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="dir">apps/</span>
-            <span class="comment"> # ====== 应用层 ======</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">main-app/</span>
-            <span class="comment"> # micro-app 基座/主应用</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
-            <span class="comment"> # Vite 构建 + @micro-app/vite-plugin</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">tsconfig.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">public/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">main.tsx</span>
-            <span class="comment"> # 应用入口</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
-            <span class="comment"> # 根组件 + 路由 + micro-app 注册</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">layouts/</span>
-            <span class="comment"> # 全局布局 (Header/Sidebar/Footer)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">router/</span>
-            <span class="comment"> # 路由配置 + 子应用挂载点</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">stores/</span>
-            <span class="comment"> # 全局状态 (用户信息/主题等)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">hooks/</span>
-            <span class="comment"> # 全局通用 hooks</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">styles/</span>
-            <span class="comment"> # 全局样式 + Tailwind 入口</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">portal/</span>
-            <span class="comment"> # 管控中心子应用</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">bootstrap.tsx</span>
-            <span class="comment"> # micro-app 子应用引导入口</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">pages/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ ├── </span><span class="dir">dashboard/</span>
-            <span class="comment"> # 门户首页/应用入口导航</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ ├── </span><span class="dir">changelog/</span>
-            <span class="comment"> # 更新日志</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ └── </span><span class="dir">stats/</span>
-            <span class="comment"> # 指标统计/数据看板</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
-            <span class="comment"> # 管控中心专属组件</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">stores/</span>
-            <span class="comment"> # 管控中心局部状态</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">mock-platform/</span>
-            <span class="comment"> # Mock 平台子应用</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">bootstrap.tsx</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">pages/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ ├── </span><span class="dir">project-list/</span>
-            <span class="comment"> # 项目/接口列表</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ ├── </span><span class="dir">doc-import/</span>
-            <span class="comment"> # 文档导入 (Swagger/MD)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ ├── </span><span class="dir">mock-editor/</span>
-            <span class="comment"> # Mock 数据编辑/预览</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ └── </span><span class="dir">mock-download/</span>
-            <span class="comment"> # 离线 Mock 文件下载</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">stores/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">parser/</span>
-            <span class="comment"> # Swagger/MD 解析引擎</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">house-hunting/</span>
-            <span class="comment"> # 看房日志子应用</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">bootstrap.tsx</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">pages/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ ├── </span><span class="dir">log-list/</span>
-            <span class="comment"> # 看房记录列表</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ ├── </span><span class="dir">log-detail/</span>
-            <span class="comment"> # 看房详情/评分</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ └── </span><span class="dir">statistics/</span>
-            <span class="comment"> # 看房统计/对比</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">stores/</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">component-hub/</span>
-            <span class="comment"> # 组件中心子应用</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">vite.config.ts</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">bootstrap.tsx</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">App.tsx</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">pages/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ ├── </span><span class="dir">catalog/</span>
-            <span class="comment"> # 组件分类目录</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ ├── </span><span class="dir">preview/</span>
-            <span class="comment"> # 组件在线预览/演示</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ │ └── </span><span class="dir">download/</span>
-            <span class="comment"> # 组件下载/安装引导</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">stores/</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ └── </span><span class="dir">api/</span>
-            <span class="comment"> # NestJS 后端服务</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="file">nest-cli.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="file">tsconfig.json</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ └── </span><span class="dir">src/</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="file">main.ts</span>
-            <span class="comment"> # NestJS 入口</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">database/</span>
-            <span class="comment"> # TypeORM + PostgreSQL 数据层</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">entities/</span>
-            <span class="comment"> # 实体定义</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">migrations/</span>
-            <span class="comment"> # 数据库迁移文件</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">data-source.ts</span>
-            <span class="comment"> # DataSource 配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">common/</span>
-            <span class="comment"> # 公共 (guards/filters/interceptors)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">config/</span>
-            <span class="comment"> # 配置模块 (env/database等)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">modules/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">auth/</span>
-            <span class="comment"> # 认证模块 (JWT/OAuth)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">user/</span>
-            <span class="comment"> # 用户模块</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">portal/</span>
-            <span class="comment"> # 管控中心模块 (更新日志/统计)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">mock/</span>
-            <span class="comment"> # Mock 平台模块 (解析/生成)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">house-hunting/</span>
-            <span class="comment"> # 看房日志模块</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">component-hub/</span>
-            <span class="comment"> # 组件中心模块</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ └── </span><span class="dir">shared/</span>
-            <span class="comment"> # DTO / 实体 / 工具函数</span>
-          </div>
-          <div class="tree-line"><span class="conn">│</span></div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="dir">packages/</span>
-            <span class="comment"> # ====== 共享包层 ======</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">shared-ui/</span>
-            <span class="comment"> # 共享 UI 组件库</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">components/</span>
-            <span class="comment"> # 通用组件 (Button/Card/Modal…)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">themes/</span>
-            <span class="comment"> # HeroUI + Tailwind 主题配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
-            <span class="comment"> # 统一导出</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">shared-auth/</span>
-            <span class="comment"> # 共享鉴权模块</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">auth-provider.tsx</span>
-            <span class="comment"> # 鉴权 Context + Provider</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">auth-guard.tsx</span>
-            <span class="comment"> # 路由守卫组件</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">use-auth.ts</span>
-            <span class="comment"> # 鉴权 Hook</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">types.ts</span>
-            <span class="comment"> # 鉴权相关类型</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">shared-utils/</span>
-            <span class="comment"> # 共享工具函数</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">http/</span>
-            <span class="comment"> # axios 封装 + 拦截器</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">format/</span>
-            <span class="comment"> # 日期/数字格式化</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">storage/</span>
-            <span class="comment"> # localStorage 封装</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">shared-types/</span>
-            <span class="comment"> # 共享 TypeScript 类型</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">api.d.ts</span>
-            <span class="comment"> # API 响应/请求类型</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">models.d.ts</span>
-            <span class="comment"> # 业务模型类型</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">enums.ts</span>
-            <span class="comment"> # 共享枚举</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">shared-config/</span>
-            <span class="comment"> # 共享构建配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">vite.base.ts</span>
-            <span class="comment"> # Vite 基础配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">tailwind.base.ts</span>
-            <span class="comment"> # Tailwind 基础配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">shared-styles/</span>
-            <span class="comment"> # 共享样式基础 (CSS 变量 &amp; 设计 Token)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="dir">src/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">tokens/</span>
-            <span class="comment"> # 设计 Token (颜色/字号/间距…)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="dir">css/</span>
-            <span class="comment"> # CSS 基础 (reset/variables/utilities)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">tailwind-preset.ts</span>
-            <span class="comment"> # Tailwind 预设 (映射 Token → CSS 变量)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">index.ts</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ │</span></div>
-          <div class="tree-line">
-            <span class="conn">│ └── </span><span class="dir">shared-i18n/</span>
-            <span class="comment"> # 共享国际化 (i18next 资源 + Hook)</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="file">package.json</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ └── </span><span class="dir">src/</span></div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">locales/</span>
-            <span class="comment"> # zh-CN / en-US 资源 JSON</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="file">i18n.ts</span>
-            <span class="comment"> # i18next 实例初始化</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="file">use-i18n.ts</span>
-            <span class="comment"> # 语言切换 Hook</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ └── </span><span class="file">index.ts</span>
-          </div>
-          <div class="tree-line"><span class="conn">│</span></div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="dir">infra/</span>
-            <span class="comment"> # ====== 基础设施层 ======</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">docker/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">Dockerfile.api</span>
-            <span class="comment"> # API 服务镜像</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">Dockerfile.web</span>
-            <span class="comment"> # 前端 Nginx 镜像</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">docker-compose.yml</span>
-            <span class="comment"> # 本地开发编排</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">.dockerignore</span>
-            <span class="comment"> # Docker 构建忽略文件</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">nginx/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">nginx.conf</span>
-            <span class="comment"> # 反向代理配置</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ ├── </span><span class="dir">scripts/</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ ├── </span><span class="file">deploy.sh</span>
-            <span class="comment"> # 部署脚本</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">│ │ └── </span><span class="file">db-migrate.sh</span>
-            <span class="comment"> # 数据库迁移脚本</span>
-          </div>
-          <div class="tree-line"><span class="conn">│ └── </span><span class="dir">ci/</span></div>
-          <div class="tree-line">
-            <span class="conn">│ └── </span><span class="file">.github/</span>
-            <span class="comment"> # GitHub Actions 工作流</span>
-          </div>
-          <div class="tree-line"><span class="conn">│</span></div>
-          <div class="tree-line">
-            <span class="conn">└── </span><span class="dir">docs/</span>
-            <span class="comment"> # ====== 文档 ======</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">architecture.md</span>
-            <span class="comment"> # 架构设计文档</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">├── </span><span class="file">deployment.md</span>
-            <span class="comment"> # 部署文档</span>
-          </div>
-          <div class="tree-line">
-            <span class="conn">└── </span><span class="file">contributing.md</span>
-            <span class="comment"> # 贡献指南</span>
-          </div>
+        <div class="file-tree" id="fileTree">
+          <ul>
+            <li>
+              <span class="ft-item ft-dir">📁 HStack/</span>
+              <span class="ft-comment">项目根目录</span>
+              <ul>
+                <!-- 根级文件 -->
+                <li>
+                  <span class="ft-item ft-file">📄 pnpm-workspace.yaml</span
+                  ><span class="ft-comment">pnpm monorepo 工作区配置</span>
+                </li>
+                <li>
+                  <span class="ft-item ft-file">📄 turbo.json</span
+                  ><span class="ft-comment">Turborepo 构建流水线</span>
+                </li>
+                <li>
+                  <span class="ft-item ft-file">📄 package.json</span
+                  ><span class="ft-comment">根 package.json (workspace 脚本)</span>
+                </li>
+                <li><span class="ft-item ft-file">📄 .gitignore</span></li>
+                <li>
+                  <span class="ft-item ft-file">📄 tsconfig.base.json</span
+                  ><span class="ft-comment">共享 TypeScript 基础配置</span>
+                </li>
+                <li>
+                  <span class="ft-item ft-file">📄 eslint.config.js</span
+                  ><span class="ft-comment">ESLint 9 Flat Config</span>
+                </li>
+                <li>
+                  <span class="ft-item ft-file">📄 .prettierrc</span
+                  ><span class="ft-comment">Prettier 配置</span>
+                </li>
+                <li>
+                  <span class="ft-item ft-file">📄 .lintstagedrc.json</span
+                  ><span class="ft-comment">lint-staged 规则</span>
+                </li>
+                <li>
+                  <span class="ft-item ft-file">📄 commitlint.config.cjs</span
+                  ><span class="ft-comment">提交信息规范</span>
+                </li>
+
+                <!-- .husky -->
+                <li>
+                  <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                    ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                    ><span class="ft-dir">.husky/</span></span
+                  >
+                  <span class="ft-comment">Git 钩子</span>
+                  <ul>
+                    <li><span class="ft-item ft-file">📄 pre-commit</span></li>
+                    <li><span class="ft-item ft-file">📄 commit-msg</span></li>
+                  </ul>
+                </li>
+
+                <!-- .changeset -->
+                <li>
+                  <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                    ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                    ><span class="ft-dir">.changeset/</span></span
+                  >
+                  <span class="ft-comment">Changesets 版本管理</span>
+                  <ul>
+                    <li><span class="ft-item ft-file">📄 config.json</span></li>
+                  </ul>
+                </li>
+
+                <li>
+                  <span class="ft-item ft-file">📄 .env.example</span
+                  ><span class="ft-comment">根环境变量模板</span>
+                </li>
+
+                <!-- ==================== apps/ ==================== -->
+                <li>
+                  <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                    ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                    ><span class="ft-dir">apps/</span></span
+                  >
+                  <span class="ft-section">应用层</span>
+                  <ul>
+                    <!-- main-app -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">main-app/</span></span
+                      >
+                      <span class="ft-comment">micro-app 基座 / 主应用</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li>
+                          <span class="ft-item ft-file">📄 vite.config.ts</span
+                          ><span class="ft-comment">Vite + micro-app 插件</span>
+                        </li>
+                        <li><span class="ft-item ft-file">📄 tsconfig.json</span></li>
+                        <li><span class="ft-item ft-file">📄 tailwind.config.ts</span></li>
+                        <li><span class="ft-item ft-file">📄 postcss.config.cjs</span></li>
+                        <li><span class="ft-item ft-file">📄 index.html</span></li>
+                        <li><span class="ft-item ft-file">📄 .env.example</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-file">📄 main.tsx</span
+                              ><span class="ft-comment">应用入口</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 App.tsx</span
+                              ><span class="ft-comment">根组件 + 路由 + Provider</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 router.tsx</span
+                              ><span class="ft-comment">路由配置</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">layout/</span></span
+                              >
+                              <span class="ft-comment">全局布局</span>
+                              <ul>
+                                <li><span class="ft-item ft-file">📄 Header.tsx</span></li>
+                                <li><span class="ft-item ft-file">📄 Sidebar.tsx</span></li>
+                                <li><span class="ft-item ft-file">📄 MainLayout.tsx</span></li>
+                              </ul>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">pages/</span></span
+                              >
+                              <ul>
+                                <li><span class="ft-item ft-file">📄 HomePage.tsx</span></li>
+                                <li><span class="ft-item ft-file">📄 LoginPage.tsx</span></li>
+                                <li><span class="ft-item ft-file">📄 NotFoundPage.tsx</span></li>
+                              </ul>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">micro-app/</span></span
+                              >
+                              <span class="ft-comment">子应用注册与容器</span>
+                              <ul>
+                                <li><span class="ft-item ft-file">📄 registry.ts</span></li>
+                                <li>
+                                  <span class="ft-item ft-file">📄 MicroAppContainer.tsx</span>
+                                </li>
+                              </ul>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">stores/</span></span
+                              >
+                              <span class="ft-comment">Zustand 全局状态</span>
+                              <ul>
+                                <li><span class="ft-item ft-file">📄 global.ts</span></li>
+                              </ul>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">styles/</span></span
+                              >
+                              <ul>
+                                <li>
+                                  <span class="ft-item ft-file">📄 global.css</span
+                                  ><span class="ft-comment">Tailwind 入口</span>
+                                </li>
+                              </ul>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">types/</span></span
+                              >
+                              <ul>
+                                <li><span class="ft-item ft-file">📄 vite-env.d.ts</span></li>
+                                <li><span class="ft-item ft-file">📄 micro-app.d.ts</span></li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- portal -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">portal/</span></span
+                      >
+                      <span class="ft-comment">管控中心子应用</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li><span class="ft-item ft-file">📄 vite.config.ts</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-file">📄 bootstrap.tsx</span
+                              ><span class="ft-comment">micro-app 子应用引导入口</span>
+                            </li>
+                            <li><span class="ft-item ft-file">📄 App.tsx</span></li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">pages/</span></span
+                              >
+                              <ul>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 dashboard/</span
+                                  ><span class="ft-comment">门户首页 / 应用入口导航</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 changelog/</span
+                                  ><span class="ft-comment">更新日志</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 stats/</span
+                                  ><span class="ft-comment">指标统计 / 数据看板</span>
+                                </li>
+                              </ul>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-dir">📂 components/</span
+                              ><span class="ft-comment">管控中心专属组件</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-dir">📂 stores/</span
+                              ><span class="ft-comment">局部状态</span>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- mock-platform -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">mock-platform/</span></span
+                      >
+                      <span class="ft-comment">Mock 平台子应用</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li><span class="ft-item ft-file">📄 vite.config.ts</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li><span class="ft-item ft-file">📄 bootstrap.tsx</span></li>
+                            <li><span class="ft-item ft-file">📄 App.tsx</span></li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">pages/</span></span
+                              >
+                              <ul>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 project-list/</span
+                                  ><span class="ft-comment">项目 / 接口列表</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 doc-import/</span
+                                  ><span class="ft-comment">文档导入 (Swagger/MD)</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 mock-editor/</span
+                                  ><span class="ft-comment">Mock 数据编辑 / 预览</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 mock-download/</span
+                                  ><span class="ft-comment">离线 Mock 文件下载</span>
+                                </li>
+                              </ul>
+                            </li>
+                            <li><span class="ft-item ft-dir">📂 components/</span></li>
+                            <li><span class="ft-item ft-dir">📂 stores/</span></li>
+                            <li>
+                              <span class="ft-item ft-dir">📂 parser/</span
+                              ><span class="ft-comment">Swagger/MD 解析引擎</span>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- house-hunting -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">house-hunting/</span></span
+                      >
+                      <span class="ft-comment">看房日志子应用</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li><span class="ft-item ft-file">📄 vite.config.ts</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li><span class="ft-item ft-file">📄 bootstrap.tsx</span></li>
+                            <li><span class="ft-item ft-file">📄 App.tsx</span></li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">pages/</span></span
+                              >
+                              <ul>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 log-list/</span
+                                  ><span class="ft-comment">看房记录列表</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 log-detail/</span
+                                  ><span class="ft-comment">看房详情 / 评分</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 statistics/</span
+                                  ><span class="ft-comment">看房统计 / 对比</span>
+                                </li>
+                              </ul>
+                            </li>
+                            <li><span class="ft-item ft-dir">📂 components/</span></li>
+                            <li><span class="ft-item ft-dir">📂 stores/</span></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- component-hub -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">component-hub/</span></span
+                      >
+                      <span class="ft-comment">组件中心子应用</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li><span class="ft-item ft-file">📄 vite.config.ts</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li><span class="ft-item ft-file">📄 bootstrap.tsx</span></li>
+                            <li><span class="ft-item ft-file">📄 App.tsx</span></li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">pages/</span></span
+                              >
+                              <ul>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 catalog/</span
+                                  ><span class="ft-comment">组件分类目录</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 preview/</span
+                                  ><span class="ft-comment">组件在线预览</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 download/</span
+                                  ><span class="ft-comment">组件下载 / 安装引导</span>
+                                </li>
+                              </ul>
+                            </li>
+                            <li><span class="ft-item ft-dir">📂 components/</span></li>
+                            <li><span class="ft-item ft-dir">📂 stores/</span></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- api -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">api/</span></span
+                      >
+                      <span class="ft-comment">NestJS 后端服务</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li><span class="ft-item ft-file">📄 nest-cli.json</span></li>
+                        <li><span class="ft-item ft-file">📄 tsconfig.json</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-file">📄 main.ts</span
+                              ><span class="ft-comment">NestJS 入口</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">database/</span></span
+                              >
+                              <span class="ft-comment">TypeORM + PostgreSQL</span>
+                              <ul>
+                                <li><span class="ft-item ft-dir">📂 entities/</span></li>
+                                <li><span class="ft-item ft-dir">📂 migrations/</span></li>
+                                <li><span class="ft-item ft-file">📄 data-source.ts</span></li>
+                              </ul>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-dir">📂 common/</span
+                              ><span class="ft-comment">guards / filters / interceptors</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-dir">📂 config/</span
+                              ><span class="ft-comment">配置模块 (env / database)</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">modules/</span></span
+                              >
+                              <span class="ft-comment"
+                                >模块化单体 — 每个 module 是独立边界单元</span
+                              >
+                              <ul>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 auth/</span
+                                  ><span class="ft-comment">认证 (JWT / OAuth)</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 user/</span
+                                  ><span class="ft-comment">用户</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 portal/</span
+                                  ><span class="ft-comment">更新日志 / 统计</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 mock/</span
+                                  ><span class="ft-comment">解析 / 生成</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 house-hunting/</span
+                                  ><span class="ft-comment">看房日志</span>
+                                </li>
+                                <li>
+                                  <span class="ft-item ft-dir">📂 component-hub/</span
+                                  ><span class="ft-comment">组件中心</span>
+                                </li>
+                              </ul>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-dir">📂 shared/</span
+                              ><span class="ft-comment">DTO / 实体 / 工具函数</span>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+
+                <!-- ==================== packages/ ==================== -->
+                <li>
+                  <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                    ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                    ><span class="ft-dir">packages/</span></span
+                  >
+                  <span class="ft-section">共享包层</span>
+                  <ul>
+                    <!-- shared-ui -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">shared-ui/</span></span
+                      >
+                      <span class="ft-comment">共享 UI 组件库</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-dir">📂 components/</span
+                              ><span class="ft-comment">Button / Card / Modal…</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 metadata.ts</span
+                              ><span class="ft-comment">组件元数据 (component-hub 消费)</span>
+                            </li>
+                            <li><span class="ft-item ft-file">📄 index.ts</span></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- shared-auth -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">shared-auth/</span></span
+                      >
+                      <span class="ft-comment">共享鉴权模块</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-file">📄 types.ts</span
+                              ><span class="ft-comment">AuthState / AuthActions 等</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 token.ts</span
+                              ><span class="ft-comment">token 持久化</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 store.ts</span
+                              ><span class="ft-comment">Zustand store</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 useAuth.ts</span
+                              ><span class="ft-comment">双模式 Hook (embedded/standalone)</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 AuthProvider.tsx</span
+                              ><span class="ft-comment">引导 + bootstrap</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 AuthGuard.tsx</span
+                              ><span class="ft-comment">路由守卫</span>
+                            </li>
+                            <li><span class="ft-item ft-file">📄 index.ts</span></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- shared-utils -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">shared-utils/</span></span
+                      >
+                      <span class="ft-comment">共享工具函数</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-file">📄 format.ts</span
+                              ><span class="ft-comment">日期 / 数字格式化</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 storage.ts</span
+                              ><span class="ft-comment">localStorage 封装</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 env.ts</span
+                              ><span class="ft-comment">isInMicroApp / getMicroAppBaseRoute</span>
+                            </li>
+                            <li><span class="ft-item ft-file">📄 index.ts</span></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- shared-types -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">shared-types/</span></span
+                      >
+                      <span class="ft-comment">共享 TypeScript 类型 — 仅放横切类型</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-file">📄 index.ts</span
+                              ><span class="ft-comment"
+                                >AuthUser / ApiResponse / Paginated / MicroAppName 等</span
+                              >
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- shared-config -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">shared-config/</span></span
+                      >
+                      <span class="ft-comment">共享构建配置 — 可简化为根目录 extends</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-file">📄 vite.base.ts</span
+                              ><span class="ft-comment">createViteConfig 工厂</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 tailwind.base.ts</span
+                              ><span class="ft-comment">createTailwindPreset 工厂</span>
+                            </li>
+                            <li><span class="ft-item ft-file">📄 postcss.base.cjs</span></li>
+                            <li><span class="ft-item ft-file">📄 index.ts</span></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- shared-styles -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">shared-styles/</span></span
+                      >
+                      <span class="ft-comment">共享样式基础 (零依赖 Token + CSS)</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-file">📄 tokens.ts</span
+                              ><span class="ft-comment"
+                                >colors / radius / spacing / fontFamily</span
+                              >
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 index.css</span
+                              ><span class="ft-comment">Tailwind directives + CSS 变量</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 tailwind-preset.ts</span
+                              ><span class="ft-comment">hstackPreset</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 heroui-theme.ts</span
+                              ><span class="ft-comment">hstackHeroUITheme</span>
+                            </li>
+                            <li><span class="ft-item ft-file">📄 index.ts</span></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- shared-i18n -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">shared-i18n/</span></span
+                      >
+                      <span class="ft-comment">共享国际化</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                                ><span class="ft-toggle">▼</span
+                                ><span class="ft-folder-icon">📁</span
+                                ><span class="ft-dir">locales/</span></span
+                              >
+                              <ul>
+                                <li><span class="ft-item ft-file">📄 zh-CN.json</span></li>
+                                <li><span class="ft-item ft-file">📄 en-US.json</span></li>
+                              </ul>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 index.ts</span
+                              ><span class="ft-comment">createI18n 工厂</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-file">📄 hooks.ts</span
+                              ><span class="ft-comment">useT</span>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- api-client -->
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">api-client/</span></span
+                      >
+                      <span class="ft-comment">API 客户端（类型 + 请求封装）</span>
+                      <span class="ft-new">NEW rev.3</span>
+                      <ul>
+                        <li><span class="ft-item ft-file">📄 package.json</span></li>
+                        <li>
+                          <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                            ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                            ><span class="ft-dir">src/</span></span
+                          >
+                          <ul>
+                            <li>
+                              <span class="ft-item ft-dir">📂 generated/</span
+                              ><span class="ft-comment"
+                                >OpenAPI Generator 产出（后端就绪后接入）</span
+                              >
+                            </li>
+                            <li>
+                              <span class="ft-item ft-dir">📂 request/</span
+                              ><span class="ft-comment">axios / fetch 封装、拦截器、错误处理</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-dir">📂 hooks/</span
+                              ><span class="ft-comment">React Query / SWR Hook（可选）</span>
+                            </li>
+                            <li>
+                              <span class="ft-item ft-dir">📂 types/</span
+                              ><span class="ft-comment"
+                                >手动领域 DTO（过渡期，待 generated 替换）</span
+                              >
+                            </li>
+                            <li><span class="ft-item ft-file">📄 index.ts</span></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+
+                <!-- ==================== infra/ ==================== -->
+                <li>
+                  <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                    ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                    ><span class="ft-dir">infra/</span></span
+                  >
+                  <span class="ft-section">基础设施层</span>
+                  <ul>
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">docker/</span></span
+                      >
+                      <ul>
+                        <li>
+                          <span class="ft-item ft-file">📄 Dockerfile.api</span
+                          ><span class="ft-comment">API 服务镜像</span>
+                        </li>
+                        <li>
+                          <span class="ft-item ft-file">📄 Dockerfile.web</span
+                          ><span class="ft-comment">前端 Nginx 镜像</span>
+                        </li>
+                        <li>
+                          <span class="ft-item ft-file">📄 docker-compose.yml</span
+                          ><span class="ft-comment">本地开发编排</span>
+                        </li>
+                        <li><span class="ft-item ft-file">📄 .dockerignore</span></li>
+                      </ul>
+                    </li>
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">nginx/</span></span
+                      >
+                      <ul>
+                        <li>
+                          <span class="ft-item ft-file">📄 nginx.conf</span
+                          ><span class="ft-comment">反向代理配置</span>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">scripts/</span></span
+                      >
+                      <ul>
+                        <li>
+                          <span class="ft-item ft-file">📄 deploy.sh</span
+                          ><span class="ft-comment">部署脚本</span>
+                        </li>
+                        <li>
+                          <span class="ft-item ft-file">📄 db-migrate.sh</span
+                          ><span class="ft-comment">数据库迁移脚本</span>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                        ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                        ><span class="ft-dir">.github/</span></span
+                      >
+                      <span class="ft-comment">GitHub Actions 工作流</span>
+                      <ul>
+                        <li><span class="ft-item ft-dir">📂 workflows/</span></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+
+                <!-- ==================== docs/ ==================== -->
+                <li>
+                  <span class="ft-item ft-folder" onclick="toggleFolder(this)"
+                    ><span class="ft-toggle">▼</span><span class="ft-folder-icon">📁</span
+                    ><span class="ft-dir">docs/</span></span
+                  >
+                  <span class="ft-section">文档</span>
+                  <ul>
+                    <li>
+                      <span class="ft-item ft-file">📄 architecture.md</span
+                      ><span class="ft-comment">架构设计文档</span>
+                    </li>
+                    <li>
+                      <span class="ft-item ft-file">📄 deployment.md</span
+                      ><span class="ft-comment">部署文档</span>
+                    </li>
+                    <li>
+                      <span class="ft-item ft-file">📄 contributing.md</span
+                      ><span class="ft-comment">贡献指南</span>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
         </div>
+
+        <script>
+          function toggleFolder(el) {
+            el.classList.toggle('collapsed');
+          }
+        </script>
       </div>
 
       <!-- ====== 应用层详解 ====== -->
@@ -1294,6 +1673,28 @@
               <span>i18next</span><span>react-i18next</span><span>多语言</span><span>Hook</span>
             </div>
           </div>
+          <div class="card">
+            <div class="card-path">packages/api-client</div>
+            <div class="card-title">
+              API 客户端 <span style="font-size: 0.8rem; color: var(--accent2)">— 新增 rev.3</span>
+            </div>
+            <div class="card-desc">
+              <strong>前后端类型与请求的隔离层。</strong>替代前端直接 alias 到
+              <code>apps/api/src/modules/**/dto</code>
+              的方式，避免后端目录结构调整牵连前端、Turborepo cache
+              失效范围扩大、内部类型泄漏等问题。<br /><br />
+              <strong>当前阶段（骨架）：</strong>手动定义领域 DTO + axios 请求封装；<br />
+              <strong>后端就绪后：</strong>通过 <code>@nestjs/swagger</code> 生成 OpenAPI JSON，再用
+              <strong>OpenAPI Generator / Orval</strong> 自动生成类型与请求函数到
+              <code>src/generated/</code>，替换手动 DTO。<br /><br />
+              前端最终只需
+              <code>import { UserDto, useUser } from '@hstack/api-client'</code
+              >，不再关心后端内部目录结构。
+            </div>
+            <div class="card-tags">
+              <span>axios</span><span>OpenAPI</span><span>类型安全</span><span>前后端解耦</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1312,8 +1713,10 @@
               类型、通用枚举（状态/排序方向）、用户基础信息。<br /><br />
               <strong>❌ 不进 shared-types 的领域类型：</strong>Portal 的统计 DTO、Mock 平台的
               Swagger 解析类型、HouseHunting 的房源模型、ComponentHub 的组件元数据。<br />
-              这些类型留在 <code>apps/api/src/modules/{domain}/dto/</code>，前端子应用通过
-              <strong>tsconfig paths alias</strong> 直接引用。
+              这些类型由 <strong>packages/api-client</strong> 统一封装导出，前端通过
+              <code>import { XxxDto } from '@hstack/api-client'</code> 消费。<br />
+              API 模块内部仍按 <code>apps/api/src/modules/{domain}/dto/</code> 组织，但前端不再直接
+              alias 引用。
             </div>
           </div>
 
@@ -1339,9 +1742,15 @@
             <div class="analysis-card">
               <div class="ac-title good">前端子应用消费方式</div>
               <div class="ac-desc">
-                子应用 tsconfig 配置 path alias：<br />
-                <code>"@api/portal": ["../api/src/modules/portal/dto"]</code><br />
-                然后直接 <code>import { StatsDto } from '@api/portal'</code>
+                通过 <code>@hstack/api-client</code> 统一消费领域类型与请求函数：<br />
+                <code>import { StatsDto, fetchStats } from '@hstack/api-client'</code><br /><br />
+                <strong>过渡期：</strong>api-client/src/types/ 下手动定义 DTO；<br />
+                <strong>后端就绪后：</strong>OpenAPI Generator 自动生成，前端代码零改动。<br /><br />
+                <span style="color: var(--text-dim)"
+                  >⚠ 旧方案（tsconfig alias 直引 API
+                  dto）已弃用，因为后端目录调整会直接炸前端、Turborepo cache
+                  失效范围大、易泄漏内部类型。</span
+                >
               </div>
             </div>
           </div>
@@ -1364,8 +1773,9 @@
 
           <div class="confirmed">
             <strong>结论：</strong>shared-types 只放横切类型，避免"一个类型改动 → 所有应用重建"。<br />
-            领域类型就近定义在 API 模块内（保持纯 type，校验器分文件），前端通过 tsconfig alias
-            消费，既保持类型安全，又解耦了不必要的依赖。
+            领域类型就近定义在 API 模块内（保持纯 type，校验器分文件），由
+            <strong>packages/api-client</strong> 封装后统一导出给前端消费。<br />
+            后端就绪前手动维护 DTO，就绪后切 OpenAPI Generator 自动生成，前端代码零改动切换。
           </div>
         </div>
       </div>
@@ -1631,6 +2041,159 @@
         </div>
       </div>
 
+      <!-- ====== 后端架构策略 ====== -->
+      <div class="section">
+        <div class="section-title green">后端架构策略 — 模块化单体</div>
+        <div class="discussion">
+          <h3>微服务 vs 单体 vs 模块化单体</h3>
+
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>维度</th>
+                <th>全拆微服务</th>
+                <th>模块化单体 ✓</th>
+                <th>大泥球单体</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>部署复杂度</td>
+                <td class="tag-no">高（5+ 进程 + 消息队列 + 网关）</td>
+                <td class="tag-yes chosen">低（单进程单库）</td>
+                <td class="tag-yes">低</td>
+              </tr>
+              <tr>
+                <td>本地开发体验</td>
+                <td class="tag-no">差（需同时启动多个服务）</td>
+                <td class="tag-yes chosen">好（pnpm dev 一键启动）</td>
+                <td class="tag-yes">好</td>
+              </tr>
+              <tr>
+                <td>模块边界清晰度</td>
+                <td class="tag-yes">强制隔离</td>
+                <td class="tag-yes chosen">代码规范约束 + 可加 lint 规则</td>
+                <td class="tag-no">无约束，容易耦合</td>
+              </tr>
+              <tr>
+                <td>数据一致性</td>
+                <td class="tag-no">需 Saga / 补偿事务</td>
+                <td class="tag-yes chosen">单库事务，简单可靠</td>
+                <td class="tag-yes">单库事务</td>
+              </tr>
+              <tr>
+                <td>故障隔离</td>
+                <td class="tag-yes">天然隔离</td>
+                <td class="tag-mid">进程级（可拆分升级）</td>
+                <td class="tag-no">一挂全挂</td>
+              </tr>
+              <tr>
+                <td>未来可拆分</td>
+                <td>—</td>
+                <td class="tag-yes chosen">低成本渐进拆分</td>
+                <td class="tag-no">重构成本极高</td>
+              </tr>
+              <tr>
+                <td>1 人运维成本</td>
+                <td class="tag-no">不可接受</td>
+                <td class="tag-yes chosen">可控</td>
+                <td class="tag-yes">可控</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="option">
+            <div class="opt-label plan-a">方案 A：模块化单体 ✓ 已采纳</div>
+            <div class="opt-desc">
+              <strong>代码层面按微服务标准设计模块边界，运行时单体部署。</strong><br /><br />
+              每个 NestJS Module（auth / user / portal / mock / house-hunting /
+              component-hub）是一个独立边界单元，拥有自己的 dto / entity / service / controller。<br />
+              Module 间只通过<strong>公开接口</strong>（Service 方法 / Controller 路由）交互，不直接
+              import 其他 module 的内部文件。<br /><br />
+              运行时只有一个 NestJS 进程 + 一个 PostgreSQL，开发体验和运维成本与普通单体一致。<br />
+              未来如果某模块需要独立部署，只需加 <code>@nestjs/microservices</code> 传输层替换
+              Module 间调用即可。
+            </div>
+          </div>
+
+          <div class="option" style="opacity: 0.5">
+            <div class="opt-label plan-b">方案 B：全拆微服务 (未采纳)</div>
+            <div class="opt-desc">
+              每个领域一个独立 NestJS 服务，通过 TCP/Redis/NATS 通信。<br /><br />
+              <strong>优点：</strong>强制隔离、独立部署、故障隔离。<br />
+              <strong>缺点：</strong>1 人项目运维 5+ 进程 + 消息中间件不可接受；跨服务事务需 Saga
+              补偿；本地调试需 docker-compose 启动全套；部署复杂度与项目规模不匹配。
+            </div>
+          </div>
+
+          <h3 style="margin-top: 20px">模块边界规则</h3>
+
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="ac-title good">公开接口交互</div>
+              <div class="ac-desc">
+                Module 间只通过 Service 方法或 Controller 路由通信，不跨 Module 直接 import。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title good">独立数据拥有</div>
+              <div class="ac-desc">
+                每个 Module 独立拥有自己的 dto / entity / repository，其他 Module 需要数据时走
+                Service 接口而非直接查表。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title warn">禁止内部穿透</div>
+              <div class="ac-desc">
+                禁止 <code>import { UserEntity } from '../user/entities/user.entity'</code> 这类跨
+                Module 内部引用。未来可加 ESLint 自定义规则强制执行。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title warn">共享层收敛</div>
+              <div class="ac-desc">
+                真正跨 Module 共用的代码收敛到 <code>src/common/</code>（guards / filters /
+                interceptors / base dto），不随意扩张。
+              </div>
+            </div>
+          </div>
+
+          <h3 style="margin-top: 20px">未来拆分路径</h3>
+
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="ac-title good">Step 1：识别边界</div>
+              <div class="ac-desc">
+                模块化单体已经划好了边界，哪个 Module 需要独立部署一目了然。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title good">Step 2：加传输层</div>
+              <div class="ac-desc">
+                目标 Module 加 <code>@nestjs/microservices</code> ClientProxy，替换原 Module 间
+                Service 直接调用为远程调用（TCP / Redis / NATS）。
+              </div>
+            </div>
+            <div class="analysis-card">
+              <div class="ac-title warn">Step 3：独立部署</div>
+              <div class="ac-desc">
+                目标 Module 拆为独立 <code>apps/*-service</code>，有自己的 package.json 和入口
+                main.ts，通过微服务传输层与主 API 通信。
+              </div>
+            </div>
+          </div>
+
+          <div class="confirmed">
+            <strong>结论：采用模块化单体。</strong><br /><br />
+            1. 代码层面按微服务标准设计模块边界，为未来拆分留好路径；<br />
+            2. 运行时单体部署，1 人可维护，本地开发体验好；<br />
+            3. 面试时可口述：「我用模块化单体架构，Module
+            边界按微服务标准设计，但避免分布式复杂度。如果业务增长，可渐进拆分为微服务。」<br />
+            4. 比上来就拆微服务更能体现工程判断力。
+          </div>
+        </div>
+      </div>
+
       <!-- ====== 微前端选型分析 ====== -->
       <div class="section">
         <div class="section-title cyan">微前端框架选型 — micro-app ✓</div>
@@ -1878,10 +2441,108 @@
         </div>
       </div>
 
+      <!-- ====== 后续规划 ====== -->
+      <div class="section">
+        <div class="section-title pink">后续规划 — 来自架构审查的建议</div>
+        <div class="discussion">
+          <h3>已采纳但延后执行</h3>
+          <p style="color: var(--text-dim); margin-bottom: 16px">
+            以下建议已确认方向正确，但因当前阶段 ROI 不足而暂不实施。等对应时机成熟时再推进。
+          </p>
+
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="ac-title good">packages/logger — 接入 Sentry 时建</div>
+              <div class="ac-desc">
+                统一日志格式：console、request log、performance log、Sentry breadcrumb、error
+                reporting。<br />
+                所有子应用日志风格统一，未来接埋点 / tracing / analytics 也更容易扩展。<br /><br />
+                <strong>触发时机：</strong>接入 Sentry SDK 时一并建设，避免过早抽象。
+              </div>
+            </div>
+
+            <div class="analysis-card">
+              <div class="ac-title warn">可观测性体系 — v2+</div>
+              <div class="ac-desc">
+                <strong>前端：</strong>Web Vitals、路由耗时、接口耗时、错误率、白屏检测；<br />
+                <strong>后端：</strong>请求耗时、SQL 耗时、慢查询、API Error Rate。<br /><br />
+                体现"系统运营能力"而非只会"写功能"，面试非常加分。但需等真实流量产生后才有价值。
+              </div>
+            </div>
+
+            <div class="analysis-card">
+              <div class="ac-title warn">Storybook 集成 — component-hub 组件 ≥10 时</div>
+              <div class="ac-desc">
+                统一组件文档与 Demo，支持 Props 动态编辑、实时预览、Theme 切换、响应式切换。<br /><br />
+                Storybook 配置复杂、维护成本高，对个人项目来说性价比低。等 component-hub
+                真正有足够组件后再考虑，届时也可与 component-hub 的在线 Playground 合并规划。
+              </div>
+            </div>
+
+            <div class="analysis-card">
+              <div class="ac-title warn">首页平台展示感 — 子应用可跑后</div>
+              <div class="ac-desc">
+                首页应更像"技术品牌首页"而非单纯的菜单入口。可增强：<br />
+                • 动态架构图（子应用通信 / package 依赖 / 请求流向）<br />
+                • 技术雷达（Frontend / Backend / Infra / Tooling）<br />
+                • 项目时间线（架构演进 / 版本迭代）<br />
+                • 数据可视化（组件数 / Mock 项目数 / API 数）<br /><br />
+                <strong>但前提是子应用得先能跑。</strong
+                >"能玩"比"能看"强，先把功能做出来再包装展示面。
+              </div>
+            </div>
+          </div>
+
+          <h3 style="margin-top: 28px">已确认不做</h3>
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="ac-title bad">shared-config 拆成 eslint-config / typescript-config</div>
+              <div class="ac-desc">
+                当前只有 1 个 main-app + 几个共享包，shared-config
+                并不臃肿。过早拆分只会增加维护成本。等有 5+ 个 app 再考虑。
+              </div>
+            </div>
+
+            <div class="analysis-card">
+              <div class="ac-title bad">独立 ADR 文档</div>
+              <div class="ac-desc">
+                架构决策已在 outline.html 各 section 的 confirmed 块中记录，且 README
+                的架构决策表也做了概括。无需单独开 ADR 目录重复记录。
+              </div>
+            </div>
+
+            <div class="analysis-card">
+              <div class="ac-title bad">架构演进文档</div>
+              <div class="ac-desc">
+                项目还在 v0，写演进文档等于写"我还没做但我想了"，说服力不够。等真有 2-3
+                个版本迭代后再写。
+              </div>
+            </div>
+
+            <div class="analysis-card">
+              <div class="ac-title bad">"核心原则"独立文档</div>
+              <div class="ac-desc">
+                5 条原则（领域优先 / 横切共享 / Token 独立 / Monorepo+微前端 / 可演进）已在 README
+                中体现，不需要单独文档再写一遍。
+              </div>
+            </div>
+          </div>
+
+          <div class="confirmed">
+            <strong>核心原则：避免无限工程化。</strong><br /><br />
+            每新增一个方案之前问自己：<br />
+            1. 是否真正解决问题？<br />
+            2. 是否提升展示价值？<br />
+            3. 是否只是技术爽点？<br /><br />
+            前两个保留，第三个克制。
+          </div>
+        </div>
+      </div>
+
       <!-- ====== Footer ====== -->
       <div class="footer">
-        HStack Project Structure Outline &middot; Updated 2026-05-18 (rev.2 — Zustand / 通信桥 /
-        路由协同 / i18n / Sentry / 工程化)
+        HStack Project Structure Outline &middot; Updated 2026-05-18 (rev.4 — 模块化单体 /
+        api-client / 类型消费更新 / 后续规划)
       </div>
     </div>
   </body>

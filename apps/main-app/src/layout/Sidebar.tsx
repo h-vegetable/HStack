@@ -45,7 +45,7 @@ function NavItem({ to, label, icon, collapsed }: NavItemProps) {
       className={({ isActive }) =>
         `flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
           isActive
-            ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-200'
+            ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-200'
             : 'text-neutral-700 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-800'
         }`
       }
