@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mock 平台 · 接口管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════ Theme Variables ═══════════════ */
+    [data-theme='light'] {
+      --bg-start:#f5f3ff;--bg-end:#edf2ff;
+      --card-bg:rgba(255,255,255,0.55);--card-border:rgba(93,95,239,0.12);
+      --card-shadow:0 8px 32px rgba(93,95,239,0.1),0 0 60px rgba(93,95,239,0.05);
+      --primary:#5d5fef;--primary-glow:rgba(93,95,239,0.35);
+      --secondary:#00d2ff;--accent:#ff7a9e;
+      --text:#1e1e2f;--text-secondary:#4a4a6a;--text-muted:#8e8ea0;
+      --input-bg:rgba(255,255,255,0.5);--input-border:rgba(93,95,239,0.25);
+      --nav-bg:rgba(245,243,255,0.72);
+      --scan-color:rgba(93,95,239,0.5);--scan-glow:rgba(93,95,239,0.15);
+      --particle-alpha:0.3;--flow-alpha:0.06;
+      --table-hover:rgba(93,95,239,0.06);--table-selected:rgba(93,95,239,0.12);
+      --overlay:rgba(237,242,255,0.6);--badge-bg:rgba(93,95,239,0.08);
+      --method-get:#61affe;--method-post:#49cc90;--method-put:#fca130;
+      --method-patch:#50e3c2;--method-delete:#f93e3e;
+      --status-active:#49cc90;--status-inactive:#8e8ea0;
+      --editor-bg:rgba(255,255,255,0.35);--editor-line:rgba(93,95,239,0.06);
+      --sidebar-bg:rgba(255,255,255,0.4);--sidebar-border:rgba(93,95,239,0.08);
+    }
+    [data-theme='dark'] {
+      --bg-start:#0f0a1e;--bg-end:#1a1035;
+      --card-bg:rgba(30,22,60,0.6);--card-border:rgba(133,130,255,0.18);
+      --card-shadow:0 8px 32px rgba(133,130,255,0.12),0 0 60px rgba(58,224,217,0.06);
+      --primary:#8582ff;--primary-glow:rgba(133,130,255,0.4);
+      --secondary:#3ae0d9;--accent:#ff6b8b;
+      --text:#ede9ff;--text-secondary:#b8b0d4;--text-muted:#7a7294;
+      --input-bg:rgba(30,22,60,0.4);--input-border:rgba(133,130,255,0.3);
+      --nav-bg:rgba(15,10,30,0.78);
+      --scan-color:rgba(133,130,255,0.7);--scan-glow:rgba(58,224,217,0.2);
+      --particle-alpha:0.6;--flow-alpha:0.1;
+      --table-hover:rgba(58,224,217,0.06);--table-selected:rgba(133,130,255,0.15);
+      --overlay:rgba(15,10,30,0.7);--badge-bg:rgba(133,130,255,0.12);
+      --method-get:#61affe;--method-post:#49cc90;--method-put:#fca130;
+      --method-patch:#50e3c2;--method-delete:#f93e3e;
+      --status-active:#49cc90;--status-inactive:#7a7294;
+      --editor-bg:rgba(15,10,30,0.5);--editor-line:rgba(133,130,255,0.08);
+      --sidebar-bg:rgba(20,15,45,0.5);--sidebar-border:rgba(133,130,255,0.1);
+    }
+
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Quicksand',system-ui,sans-serif;
+      background:linear-gradient(135deg,var(--bg-start),var(--bg-end));
+      color:var(--text);height:100vh;overflow:hidden;
+      transition:background 0.6s ease,color 0.4s ease;
+    }
+    h1,h2,h3,h4{font-family:'Rajdhani','Quicksand',sans-serif;font-weight:700;letter-spacing:0.02em}
+    a{color:var(--primary);text-decoration:none}
+
+    #particle-canvas,#flow-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+
+    /* ═══════════════ Navigation ═══════════════ */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid var(--card-border);transition:background 0.4s}
+    .nav-inner{max-width:100%;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+    .nav-left{display:flex;align-items:center;gap:12px}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);cursor:pointer;transition:color 0.2s;padding:6px 10px;border-radius:8px}
+    .nav-back:hover{color:var(--primary);background:var(--badge-bg)}
+    .nav-back svg{width:16px;height:16px}
+    .nav-project{display:flex;align-items:center;gap:10px}
+    .nav-project-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--primary-glow),var(--scan-glow));display:flex;align-items:center;justify-content:center;font-size:16px}
+    .nav-project h3{font-size:17px}
+    .nav-project .status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+    .status-badge.active{background:rgba(73,204,144,0.1);color:var(--status-active);border:1px solid rgba(73,204,144,0.2)}
+    .status-badge.active .dot{width:5px;height:5px;border-radius:50%;background:var(--status-active);animation:breathe 2s ease-in-out infinite}
+    .nav-right{display:flex;align-items:center;gap:8px}
+    .nav-hologram-line{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,var(--primary) 30%,var(--secondary) 70%,transparent 100%);opacity:0.5;animation:holoLine 4s ease-in-out infinite}
+    @keyframes holoLine{0%,100%{opacity:0.3;transform:scaleX(0.8)}50%{opacity:0.7;transform:scaleX(1)}}
+
+    /* Theme Toggle */
+    .theme-toggle{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--input-border);background:var(--input-bg);cursor:pointer;backdrop-filter:blur(8px);transition:all 0.3s ease;display:flex;align-items:center;justify-content:center}
+    .theme-toggle:hover{border-color:var(--primary);box-shadow:0 0 12px var(--primary-glow)}
+    .theme-toggle svg{width:15px;height:15px;color:var(--primary);transition:transform 0.4s cubic-bezier(0.68,-0.55,0.27,1.55)}
+    .theme-toggle:hover svg{transform:rotate(180deg)}
+
+    /* ═══════════════ Main Layout ═══════════════ */
+    .app-layout{
+      position:relative;z-index:1;
+      display:flex;
+      padding-top:56px;
+      height:100vh;
+    }
+
+    /* ═══════════════ Left Sidebar ═══════════════ */
+    .sidebar{
+      width:280px;min-width:280px;
+      background:var(--sidebar-bg);
+      backdrop-filter:blur(16px) saturate(1.2);
+      border-right:1px solid var(--sidebar-border);
+      display:flex;flex-direction:column;
+      height:calc(100vh - 56px);
+      overflow:hidden;
+    }
+    .sidebar-header{
+      padding:16px;flex-shrink:0;
+      border-bottom:1px solid var(--sidebar-border);
+    }
+    .sidebar-search{
+      width:100%;padding:9px 12px 9px 36px;border-radius:10px;
+      border:1.5px solid var(--input-border);background:var(--input-bg);
+      backdrop-filter:blur(8px);font-family:'Quicksand',sans-serif;font-size:13px;color:var(--text);
+      outline:none;transition:all 0.3s ease;
+    }
+    .sidebar-search::placeholder{color:var(--text-muted);font-size:12px;font-weight:300}
+    .sidebar-search:focus{border-color:var(--primary);box-shadow:0 0 12px var(--primary-glow)}
+    .search-wrap{position:relative}
+    .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-muted);pointer-events:none}
+
+    /* Sidebar Actions */
+    .sidebar-actions{
+      display:flex;gap:6px;padding:12px 16px;flex-shrink:0;
+    }
+
+    /* ═══════════════ Buttons ═══════════════ */
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-family:'Quicksand',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;position:relative;overflow:hidden;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+    .btn:active{transform:scale(0.96)}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary),var(--secondary) 30%));color:#fff;box-shadow:0 4px 20px var(--primary-glow)}
+    .btn-primary::before{content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);transform:skewX(-20deg);transition:left 0.6s ease}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px var(--primary-glow)}
+    .btn-primary:hover::before{left:120%}
+    .btn-ghost{background:transparent;border:1.5px solid var(--input-border);color:var(--primary);backdrop-filter:blur(8px)}
+    .btn-ghost:hover{background:var(--badge-bg);border-color:var(--primary);box-shadow:0 0 16px var(--primary-glow)}
+    .btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+    .btn-xs{padding:4px 10px;font-size:11px;border-radius:7px}
+    .btn-danger{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent),#ff4060 30%));color:#fff;box-shadow:0 4px 16px rgba(255,122,158,0.25)}
+    .btn-icon{width:32px;height:32px;padding:0;border-radius:10px;display:flex;align-items:center;justify-content:center;background:transparent;border:1.5px solid var(--input-border);color:var(--text-muted);cursor:pointer;transition:all 0.3s ease;flex-shrink:0}
+    .btn-icon:hover{border-color:var(--primary);color:var(--primary);box-shadow:0 0 12px var(--primary-glow)}
+    .btn-icon svg{width:14px;height:14px}
+
+    /* ═══════════════ Group Tree ═══════════════ */
+    .sidebar-content{flex:1;overflow-y:auto;padding:0 0 16px}
+    .group-section{margin-top:4px}
+    .group-header{
+      display:flex;align-items:center;gap:8px;
+      padding:8px 16px;cursor:pointer;
+      transition:background 0.2s;user-select:none;
+    }
+    .group-header:hover{background:var(--table-hover)}
+    .group-arrow{
+      width:16px;height:16px;display:flex;align-items:center;justify-content:center;
+      transition:transform 0.25s ease;color:var(--text-muted);flex-shrink:0
+    }
+    .group-arrow.open{transform:rotate(90deg)}
+    .group-arrow svg{width:12px;height:12px}
+    .group-name{flex:1;font-size:13px;font-weight:600;color:var(--text-secondary)}
+    .group-count{
+      font-size:11px;color:var(--text-muted);
+      background:var(--badge-bg);padding:1px 7px;border-radius:6px;
+    }
+    .group-edit{
+      opacity:0;width:22px;height:22px;border-radius:6px;
+      display:flex;align-items:center;justify-content:center;
+      background:transparent;border:none;cursor:pointer;color:var(--text-muted);
+      transition:all 0.2s;
+    }
+    .group-header:hover .group-edit{opacity:1}
+    .group-edit:hover{color:var(--primary);background:var(--badge-bg)}
+    .group-edit svg{width:11px;height:11px}
+
+    /* Interface Items */
+    .group-items{overflow:hidden;transition:max-height 0.3s ease}
+    .group-items.collapsed{max-height:0 !important}
+    .iface-item{
+      display:flex;align-items:center;gap:8px;
+      padding:7px 16px 7px 40px;cursor:pointer;
+      transition:background 0.2s;position:relative;
+    }
+    .iface-item:hover{background:var(--table-hover)}
+    .iface-item.selected{background:var(--table-selected)}
+    .iface-item.selected::before{
+      content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;
+      background:linear-gradient(180deg,var(--primary),var(--secondary));
+      border-radius:2px;box-shadow:0 0 8px var(--primary-glow);
+      animation:breathe 2s ease-in-out infinite;
+    }
+    .method-tag{
+      font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+      padding:2px 6px;border-radius:4px;min-width:38px;text-align:center;
+      flex-shrink:0;letter-spacing:0.5px;
+    }
+    .method-tag.get{background:rgba(97,175,254,0.12);color:var(--method-get)}
+    .method-tag.post{background:rgba(73,204,144,0.12);color:var(--method-post)}
+    .method-tag.put{background:rgba(252,161,48,0.12);color:var(--method-put)}
+    .method-tag.delete{background:rgba(249,62,62,0.12);color:var(--method-delete)}
+    .method-tag.patch{background:rgba(80,227,194,0.12);color:var(--method-patch)}
+    .iface-path{
+      font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+
+    /* Add Group Inline */
+    .add-group{
+      display:flex;align-items:center;gap:8px;
+      padding:8px 16px;cursor:pointer;color:var(--text-muted);
+      font-size:12px;transition:color 0.2s;
+    }
+    .add-group:hover{color:var(--primary)}
+    .add-group svg{width:13px;height:13px}
+    .add-group-input{
+      margin:4px 16px;padding:7px 12px;border-radius:8px;
+      border:1.5px solid var(--primary);background:var(--input-bg);
+      font-family:'Quicksand',sans-serif;font-size:13px;color:var(--text);
+      outline:none;width:calc(100% - 32px);
+      box-shadow:0 0 12px var(--primary-glow);
+    }
+
+    /* ═══════════════ Right Panel ═══════════════ */
+    .main-panel{
+      flex:1;overflow:hidden;display:flex;flex-direction:column;
+      background:transparent;
+    }
+
+    /* Interface Header */
+    .iface-header{
+      padding:20px 28px 0;flex-shrink:0;
+      animation:fadeInUp 0.4s ease both;
+    }
+    .iface-header-top{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+    .iface-header .method-tag{font-size:12px;padding:4px 10px;border-radius:6px;min-width:48px}
+    .iface-header .path-text{
+      font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;
+    }
+    .iface-header .desc-text{font-size:14px;color:var(--text-secondary);margin-left:8px}
+    .iface-header-actions{margin-left:auto;display:flex;gap:6px}
+
+    /* Tabs */
+    .tabs{
+      display:flex;gap:2px;padding:16px 28px 0;
+      border-bottom:1px solid var(--card-border);
+      flex-shrink:0;
+    }
+    .tab{
+      padding:10px 20px;font-size:13px;font-weight:600;
+      color:var(--text-muted);cursor:pointer;border:none;background:none;
+      border-bottom:2px solid transparent;
+      transition:all 0.25s ease;position:relative;
+    }
+    .tab:hover{color:var(--primary)}
+    .tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+    .tab.active::after{
+      content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,var(--primary),var(--secondary));
+      border-radius:1px;
+    }
+
+    /* Tab Content */
+    .tab-content{flex:1;overflow-y:auto;padding:20px 28px 28px}
+    .tab-panel{display:none;animation:fadeInUp 0.3s ease both}
+    .tab-panel.active{display:block}
+
+    /* ═══════════════ Mock Response Tab ═══════════════ */
+    .response-config{
+      display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;
+    }
+    .config-item{display:flex;align-items:center;gap:8px}
+    .config-label{font-size:12px;color:var(--text-muted);font-weight:600;white-space:nowrap}
+    .config-input{
+      width:80px;padding:7px 12px;border-radius:8px;
+      border:1.5px solid var(--input-border);background:var(--input-bg);
+      font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);
+      outline:none;transition:all 0.3s;text-align:center;
+    }
+    .config-input:focus{border-color:var(--primary);box-shadow:0 0 12px var(--primary-glow)}
+    .config-select{
+      padding:7px 12px;border-radius:8px;
+      border:1.5px solid var(--input-border);background:var(--input-bg);
+      font-family:'Quicksand',sans-serif;font-size:13px;color:var(--text);
+      outline:none;cursor:pointer;transition:all 0.3s;
+    }
+    .config-select:focus{border-color:var(--primary)}
+
+    /* Toggle */
+    .toggle{
+      width:42px;height:24px;border-radius:12px;
+      border:1.5px solid var(--input-border);background:var(--input-bg);
+      cursor:pointer;position:relative;transition:all 0.3s;
+    }
+    .toggle.on{background:var(--primary);border-color:var(--primary)}
+    .toggle .knob{
+      position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+      background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.2);
+      transition:transform 0.3s cubic-bezier(0.68,-0.55,0.27,1.55);
+    }
+    .toggle.on .knob{transform:translateX(18px)}
+
+    /* Editor */
+    .editor-wrap{
+      border:1px solid var(--card-border);border-radius:14px;overflow:hidden;
+      background:var(--editor-bg);backdrop-filter:blur(12px);
+      box-shadow:var(--card-shadow);position:relative;
+    }
+    .editor-toolbar{
+      display:flex;align-items:center;gap:8px;
+      padding:8px 14px;border-bottom:1px solid var(--editor-line);
+      background:var(--card-bg);
+    }
+    .editor-toolbar-btn{
+      padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;
+      color:var(--text-muted);background:transparent;border:1px solid var(--card-border);
+      cursor:pointer;transition:all 0.2s;
+    }
+    .editor-toolbar-btn:hover{color:var(--primary);border-color:var(--primary);background:var(--badge-bg)}
+    .editor-toolbar-btn.primary{color:var(--primary);border-color:var(--primary)}
+    .editor-dots{display:flex;gap:5px;margin-right:8px}
+    .editor-dot{width:10px;height:10px;border-radius:50%}
+    .editor-dot:nth-child(1){background:#ff5f57}
+    .editor-dot:nth-child(2){background:#febc2e}
+    .editor-dot:nth-child(3){background:#28c840}
+
+    .editor-body{
+      padding:16px;font-family:'JetBrains Mono',monospace;font-size:13px;
+      line-height:1.7;color:var(--text);min-height:300px;
+      white-space:pre;overflow-x:auto;
+    }
+    .editor-body .line{display:flex}
+    .editor-body .line-num{
+      width:36px;text-align:right;color:var(--text-muted);opacity:0.4;
+      margin-right:16px;user-select:none;flex-shrink:0;
+    }
+    .editor-body .line-content{flex:1}
+    /* Syntax Highlighting */
+    .syn-key{color:var(--secondary)}
+    .syn-str{color:var(--accent)}
+    .syn-num{color:var(--method-put)}
+    .syn-bool{color:var(--method-patch)}
+    .syn-mock{color:var(--primary);font-weight:600}
+
+    /* Preview */
+    .preview-section{margin-top:20px}
+    .preview-label{
+      font-size:12px;font-weight:600;color:var(--text-muted);
+      margin-bottom:8px;display:flex;align-items:center;gap:6px;
+    }
+    .preview-label .dot{width:6px;height:6px;border-radius:50%;background:var(--secondary);animation:breathe 2s ease-in-out infinite}
+    .preview-box{
+      border:1px solid var(--card-border);border-radius:12px;overflow:hidden;
+      background:var(--editor-bg);backdrop-filter:blur(8px);
+    }
+    .preview-body{
+      padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;
+      line-height:1.7;color:var(--text);white-space:pre;overflow-x:auto;
+    }
+
+    /* ═══════════════ Request Params Tab ═══════════════ */
+    .schema-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+    .schema-table th{
+      padding:10px 14px;text-align:left;font-weight:600;font-size:12px;
+      color:var(--primary);background:var(--badge-bg);
+      backdrop-filter:blur(8px);border-bottom:1px solid var(--card-border);
+    }
+    .schema-table th:first-child{border-radius:10px 0 0 0}
+    .schema-table th:last-child{border-radius:0 10px 0 0}
+    .schema-table td{
+      padding:10px 14px;border-bottom:1px solid var(--editor-line);
+      transition:background 0.2s;
+    }
+    .schema-table tr:hover td{background:var(--table-hover)}
+    .schema-table .required-mark{color:var(--accent);font-weight:700}
+    .schema-table .type-badge{
+      font-family:'JetBrains Mono',monospace;font-size:11px;
+      padding:2px 8px;border-radius:4px;background:var(--badge-bg);color:var(--primary);
+    }
+
+    /* ═══════════════ JSON Preview Tab ═══════════════ */
+    .json-viewer{
+      border:1px solid var(--card-border);border-radius:14px;overflow:hidden;
+      background:var(--editor-bg);backdrop-filter:blur(12px);
+    }
+    .json-viewer-header{
+      display:flex;align-items:center;gap:8px;
+      padding:10px 14px;border-bottom:1px solid var(--editor-line);background:var(--card-bg);
+    }
+    .json-viewer-body{
+      padding:16px;font-family:'JetBrains Mono',monospace;font-size:13px;
+      line-height:1.7;color:var(--text);white-space:pre;overflow-x:auto;
+      max-height:400px;overflow-y:auto;
+    }
+
+    /* ═══════════════ Test Request Tab ═══════════════ */
+    .test-bar{
+      display:flex;align-items:center;gap:8px;margin-bottom:16px;
+    }
+    .test-method{
+      padding:8px 14px;border-radius:10px;font-family:'JetBrains Mono',monospace;
+      font-size:14px;font-weight:700;border:1.5px solid var(--input-border);
+      background:var(--input-bg);color:var(--method-get);outline:none;cursor:pointer;
+      min-width:90px;
+    }
+    .test-url{
+      flex:1;padding:10px 16px;border-radius:10px;
+      border:1.5px solid var(--input-border);background:var(--input-bg);
+      font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);
+      outline:none;transition:all 0.3s;
+    }
+    .test-url:focus{border-color:var(--primary);box-shadow:0 0 12px var(--primary-glow)}
+    .test-send{padding:10px 24px}
+
+    .test-subtabs{
+      display:flex;gap:2px;margin-bottom:16px;
+    }
+    .test-subtab{
+      padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;
+      color:var(--text-muted);cursor:pointer;border:1px solid transparent;
+      background:none;transition:all 0.2s;
+    }
+    .test-subtab:hover{color:var(--primary)}
+    .test-subtab.active{color:var(--primary);background:var(--badge-bg);border-color:var(--card-border)}
+
+    .test-response{
+      margin-top:20px;border-top:1px solid var(--card-border);padding-top:16px;
+    }
+    .response-meta{display:flex;gap:16px;margin-bottom:12px}
+    .meta-badge{
+      font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;
+    }
+    .meta-badge.status-ok{background:rgba(73,204,144,0.12);color:var(--status-active)}
+    .meta-badge.time{background:var(--badge-bg);color:var(--primary)}
+    .meta-badge.size{background:var(--badge-bg);color:var(--text-secondary)}
+
+    /* ═══════════════ Import Drawer ═══════════════ */
+    .drawer-overlay{
+      position:fixed;inset:0;z-index:200;
+      background:var(--overlay);backdrop-filter:blur(8px);
+      opacity:0;pointer-events:none;transition:opacity 0.35s ease;
+    }
+    .drawer-overlay.open{opacity:1;pointer-events:auto}
+    .drawer-panel{
+      position:fixed;top:0;right:0;bottom:0;width:420px;max-width:90vw;z-index:201;
+      background:var(--card-bg);backdrop-filter:blur(24px);
+      border-left:1px solid var(--card-border);
+      box-shadow:-16px 0 48px rgba(0,0,0,0.15),0 0 60px var(--primary-glow);
+      transform:translateX(100%);transition:transform 0.45s cubic-bezier(0.34,1.56,0.64,1);
+      display:flex;flex-direction:column;
+    }
+    .drawer-overlay.open .drawer-panel{transform:translateX(0)}
+    .drawer-light-bar{
+      position:absolute;top:0;left:0;bottom:0;width:3px;
+      background:linear-gradient(180deg,var(--primary),var(--secondary),var(--accent));
+      animation:lightDescend 2s ease-in-out infinite;
+    }
+    @keyframes lightDescend{0%,100%{opacity:0.3}50%{opacity:1}}
+    .drawer-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:20px 24px;border-bottom:1px solid var(--card-border);flex-shrink:0;
+    }
+    .drawer-header-left{display:flex;align-items:center;gap:10px}
+    .glow-dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 10px var(--primary-glow);animation:breathe 2s ease-in-out infinite}
+    .drawer-header h3{font-size:18px}
+    .drawer-close{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--input-border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;color:var(--text-muted)}
+    .drawer-close:hover{border-color:var(--primary);color:var(--primary);box-shadow:0 0 12px var(--primary-glow);transform:rotate(90deg)}
+    .drawer-close svg{width:14px;height:14px}
+    .drawer-body{flex:1;overflow-y:auto;padding:24px}
+    .drawer-footer{padding:16px 24px;border-top:1px solid var(--card-border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+
+    /* Upload Zone */
+    .upload-zone{
+      border:2px dashed var(--input-border);border-radius:16px;
+      padding:40px 24px;text-align:center;cursor:pointer;
+      transition:all 0.3s;margin-bottom:20px;
+    }
+    .upload-zone:hover{border-color:var(--primary);background:var(--badge-bg)}
+    .upload-zone svg{width:40px;height:40px;color:var(--text-muted);margin-bottom:12px}
+    .upload-zone h4{font-size:15px;margin-bottom:4px}
+    .upload-zone p{font-size:12px;color:var(--text-muted)}
+    .upload-zone .format-tags{display:flex;gap:6px;justify-content:center;margin-top:12px}
+    .format-tag{
+      padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;
+      background:var(--badge-bg);color:var(--primary);
+    }
+
+    /* Import Result Preview */
+    .import-result{margin-top:16px}
+    .import-result h4{font-size:14px;margin-bottom:12px;color:var(--text-secondary)}
+    .import-item{
+      display:flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:8px;font-size:12px;
+      transition:background 0.2s;position:relative;
+    }
+    .import-item:hover{background:var(--table-hover)}
+    .import-item::before{
+      content:'';position:absolute;left:0;top:4px;bottom:4px;width:2px;
+      background:linear-gradient(180deg,var(--primary),var(--secondary));
+      border-radius:1px;height:0;transition:height 0.2s;
+    }
+    .import-item:hover::before{height:calc(100% - 8px)}
+    .import-group-label{font-size:11px;color:var(--text-muted);font-weight:600;padding:6px 12px;text-transform:uppercase;letter-spacing:0.5px}
+
+    /* ═══════════════ Animations ═══════════════ */
+    @keyframes breathe{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--primary)}
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  <canvas id="flow-canvas"></canvas>
+
+  <!-- ═══════════════ Navigation ═══════════════ -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <div class="nav-back" onclick="location.href='project-list.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+          项目列表
+        </div>
+        <div class="nav-project">
+          <div class="nav-project-icon">🛒</div>
+          <h3>E-Commerce API</h3>
+          <div class="status-badge active"><span class="dot"></span> 运行中</div>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button class="btn btn-ghost btn-sm" onclick="openDrawer('importDrawer')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          导入
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="openDrawer('exportDrawer')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          导出
+        </button>
+        <button class="btn btn-primary btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          激活服务
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="nav-hologram-line"></div>
+  </nav>
+
+  <!-- ═══════════════ App Layout ═══════════════ -->
+  <div class="app-layout">
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" class="sidebar-search" placeholder="搜索接口..." />
+        </div>
+      </div>
+      <div class="sidebar-actions">
+        <button class="btn btn-primary btn-xs" style="flex:1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          新建接口
+        </button>
+      </div>
+      <div class="sidebar-content">
+        <!-- Group: Users -->
+        <div class="group-section">
+          <div class="group-header" onclick="toggleGroup(this)">
+            <div class="group-arrow open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+            <span class="group-name">Users</span>
+            <span class="group-count">6</span>
+            <button class="group-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          </div>
+          <div class="group-items" style="max-height:400px">
+            <div class="iface-item selected" onclick="selectIface(this)">
+              <span class="method-tag get">GET</span>
+              <span class="iface-path">/users</span>
+            </div>
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag post">POST</span>
+              <span class="iface-path">/users</span>
+            </div>
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag get">GET</span>
+              <span class="iface-path">/users/:id</span>
+            </div>
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag put">PUT</span>
+              <span class="iface-path">/users/:id</span>
+            </div>
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag delete">DEL</span>
+              <span class="iface-path">/users/:id</span>
+            </div>
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag get">GET</span>
+              <span class="iface-path">/users/:id/profile</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group: Products -->
+        <div class="group-section">
+          <div class="group-header" onclick="toggleGroup(this)">
+            <div class="group-arrow open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+            <span class="group-name">Products</span>
+            <span class="group-count">5</span>
+            <button class="group-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          </div>
+          <div class="group-items" style="max-height:300px">
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag get">GET</span>
+              <span class="iface-path">/products</span>
+            </div>
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag post">POST</span>
+              <span class="iface-path">/products</span>
+            </div>
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag get">GET</span>
+              <span class="iface-path">/products/:id</span>
+            </div>
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag patch">PAT</span>
+              <span class="iface-path">/products/:id</span>
+            </div>
+            <div class="iface-item" onclick="selectIface(this)">
+              <span class="method-tag delete">DEL</span>
+              <span class="iface-path">/products/:id</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group: Orders -->
+        <div class="group-section">
+          <div class="group-header" onclick="toggleGroup(this)">
+            <div class="group-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+            <span class="group-name">Orders</span>
+            <span class="group-count">4</span>
+            <button class="group-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          </div>
+          <div class="group-items collapsed"></div>
+        </div>
+
+        <!-- Add Group -->
+        <div class="add-group" onclick="showAddGroup(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          添加分组
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Main Panel -->
+    <div class="main-panel">
+      <!-- Interface Header -->
+      <div class="iface-header">
+        <div class="iface-header-top">
+          <span class="method-tag get">GET</span>
+          <span class="path-text">/users</span>
+          <span class="desc-text">获取用户列表</span>
+          <div class="iface-header-actions">
+            <button class="btn-icon" title="编辑接口">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn-icon" title="删除接口" style="color:var(--accent)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('mockResponse',this)">Mock 响应</button>
+        <button class="tab" onclick="switchTab('requestParams',this)">请求参数</button>
+        <button class="tab" onclick="switchTab('jsonPreview',this)">JSON 预览</button>
+        <button class="tab" onclick="switchTab('testRequest',this)">测试请求</button>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Mock Response Tab -->
+        <div class="tab-panel active" id="mockResponse">
+          <div class="response-config">
+            <div class="config-item">
+              <span class="config-label">状态码</span>
+              <select class="config-select">
+                <option>200</option><option>201</option><option>400</option><option>404</option><option>500</option>
+              </select>
+            </div>
+            <div class="config-item">
+              <span class="config-label">延迟</span>
+              <input type="number" class="config-input" value="0" style="width:64px" />
+              <span class="config-label">ms</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">Mock.js</span>
+              <div class="toggle on" onclick="this.classList.toggle('on')"><div class="knob"></div></div>
+            </div>
+          </div>
+
+          <!-- Editor -->
+          <div class="editor-wrap">
+            <div class="editor-toolbar">
+              <div class="editor-dots"><span class="editor-dot"></span><span class="editor-dot"></span><span class="editor-dot"></span></div>
+              <button class="editor-toolbar-btn primary">✨ 从 Schema 生成</button>
+              <button class="editor-toolbar-btn">格式化</button>
+              <button class="editor-toolbar-btn">折叠</button>
+            </div>
+            <div class="editor-body"><div class="line"><span class="line-num">1</span><span class="line-content">{</span></div><div class="line"><span class="line-num">2</span><span class="line-content">  <span class="syn-key">"code"</span>: <span class="syn-num">200</span>,</span></div><div class="line"><span class="line-num">3</span><span class="line-content">  <span class="syn-key">"message"</span>: <span class="syn-str">"success"</span>,</span></div><div class="line"><span class="line-num">4</span><span class="line-content">  <span class="syn-key">"data"</span>: {</span></div><div class="line"><span class="line-num">5</span><span class="line-content">    <span class="syn-key">"list"</span>: [</span></div><div class="line"><span class="line-num">6</span><span class="line-content">      {</span></div><div class="line"><span class="line-num">7</span><span class="line-content">        <span class="syn-key">"id"</span>: <span class="syn-mock">@guid</span>,</span></div><div class="line"><span class="line-num">8</span><span class="line-content">        <span class="syn-key">"name"</span>: <span class="syn-mock">@cname</span>,</span></div><div class="line"><span class="line-num">9</span><span class="line-content">        <span class="syn-key">"email"</span>: <span class="syn-mock">@email</span>,</span></div><div class="line"><span class="line-num">10</span><span class="line-content">        <span class="syn-key">"avatar"</span>: <span class="syn-mock">@image('80x80')</span>,</span></div><div class="line"><span class="line-num">11</span><span class="line-content">        <span class="syn-key">"role"</span>: <span class="syn-mock">@pick(['admin','user','editor'])</span>,</span></div><div class="line"><span class="line-num">12</span><span class="line-content">        <span class="syn-key">"createdAt"</span>: <span class="syn-mock">@datetime</span></span></div><div class="line"><span class="line-num">13</span><span class="line-content">      }</span></div><div class="line"><span class="line-num">14</span><span class="line-content">    ],</span></div><div class="line"><span class="line-num">15</span><span class="line-content">    <span class="syn-key">"total"</span>: <span class="syn-mock">@integer(50, 200)</span>,</span></div><div class="line"><span class="line-num">16</span><span class="line-content">    <span class="syn-key">"page"</span>: <span class="syn-num">1</span>,</span></div><div class="line"><span class="line-num">17</span><span class="line-content">    <span class="syn-key">"pageSize"</span>: <span class="syn-num">20</span></span></div><div class="line"><span class="line-num">18</span><span class="line-content">  }</span></div><div class="line"><span class="line-num">19</span><span class="line-content">}</span></div></div>
+          </div>
+
+          <!-- Mock.js Preview -->
+          <div class="preview-section">
+            <div class="preview-label"><span class="dot"></span> Mock.js 实时渲染预览</div>
+            <div class="preview-box">
+              <div class="preview-body">{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        "name": "张三",
+        "email": "zhang@example.com",
+        "avatar": "https://picsum.photos/80/80",
+        "role": "editor",
+        "createdAt": "2026-05-29 14:32:08"
+      }
+    ],
+    "total": 128,
+    "page": 1,
+    "pageSize": 20
+  }
+}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Request Params Tab -->
+        <div class="tab-panel" id="requestParams">
+          <h4 style="font-size:15px;margin-bottom:14px;color:var(--text-secondary)">Query Parameters</h4>
+          <table class="schema-table">
+            <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>描述</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">page</code></td><td><span class="type-badge">integer</span></td><td><span class="required-mark">*</span></td><td>页码，从 1 开始</td></tr>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">pageSize</code></td><td><span class="type-badge">integer</span></td><td><span class="required-mark">*</span></td><td>每页条数，最大 100</td></tr>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">keyword</code></td><td><span class="type-badge">string</span></td><td></td><td>搜索关键词</td></tr>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">role</code></td><td><span class="type-badge">enum</span></td><td></td><td>筛选角色：admin | user | editor</td></tr>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">sortBy</code></td><td><span class="type-badge">string</span></td><td></td><td>排序字段</td></tr>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">order</code></td><td><span class="type-badge">enum</span></td><td></td><td>asc | desc</td></tr>
+            </tbody>
+          </table>
+
+          <h4 style="font-size:15px;margin:24px 0 14px;color:var(--text-secondary)">Response Schema</h4>
+          <table class="schema-table">
+            <thead><tr><th>字段</th><th>类型</th><th>描述</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">code</code></td><td><span class="type-badge">integer</span></td><td>状态码</td></tr>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">data.list[].id</code></td><td><span class="type-badge">string</span></td><td>用户 ID</td></tr>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">data.list[].name</code></td><td><span class="type-badge">string</span></td><td>用户名</td></tr>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">data.list[].email</code></td><td><span class="type-badge">string</span></td><td>邮箱</td></tr>
+              <tr><td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">data.total</code></td><td><span class="type-badge">integer</span></td><td>总数</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- JSON Preview Tab -->
+        <div class="tab-panel" id="jsonPreview">
+          <div class="json-viewer">
+            <div class="json-viewer-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+              <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">格式化 JSON 响应</span>
+              <div style="margin-left:auto;display:flex;gap:6px">
+                <button class="editor-toolbar-btn">复制</button>
+                <button class="editor-toolbar-btn">折叠全部</button>
+                <button class="editor-toolbar-btn">展开全部</button>
+              </div>
+            </div>
+            <div class="json-viewer-body">{
+  <span class="syn-key">"code"</span>: <span class="syn-num">200</span>,
+  <span class="syn-key">"message"</span>: <span class="syn-str">"success"</span>,
+  <span class="syn-key">"data"</span>: {
+    <span class="syn-key">"list"</span>: [
+      {
+        <span class="syn-key">"id"</span>: <span class="syn-str">"f47ac10b-58cc-4372"</span>,
+        <span class="syn-key">"name"</span>: <span class="syn-str">"张三"</span>,
+        <span class="syn-key">"email"</span>: <span class="syn-str">"zhang@example.com"</span>,
+        <span class="syn-key">"avatar"</span>: <span class="syn-str">"https://picsum.photos/80/80"</span>,
+        <span class="syn-key">"role"</span>: <span class="syn-str">"editor"</span>,
+        <span class="syn-key">"createdAt"</span>: <span class="syn-str">"2026-05-29 14:32:08"</span>
+      }
+    ],
+    <span class="syn-key">"total"</span>: <span class="syn-num">128</span>,
+    <span class="syn-key">"page"</span>: <span class="syn-num">1</span>,
+    <span class="syn-key">"pageSize"</span>: <span class="syn-num">20</span>
+  }
+}</div>
+          </div>
+        </div>
+
+        <!-- Test Request Tab -->
+        <div class="tab-panel" id="testRequest">
+          <div class="test-bar">
+            <select class="test-method" style="color:var(--method-get)">
+              <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
+            </select>
+            <input type="text" class="test-url" value="http://localhost:3000/mock/ecommerce/users?page=1&pageSize=20" />
+            <button class="btn btn-primary test-send">发送</button>
+          </div>
+          <div class="test-subtabs">
+            <button class="test-subtab active">Params</button>
+            <button class="test-subtab">Headers</button>
+            <button class="test-subtab">Body</button>
+          </div>
+          <table class="schema-table">
+            <thead><tr><th>Key</th><th>Value</th><th>描述</th></tr></thead>
+            <tbody>
+              <tr><td><input type="text" class="hstack-input" value="page" style="padding:6px 10px;font-size:12px" /></td><td><input type="text" class="hstack-input" value="1" style="padding:6px 10px;font-size:12px" /></td><td style="color:var(--text-muted);font-size:12px">页码</td></tr>
+              <tr><td><input type="text" class="hstack-input" value="pageSize" style="padding:6px 10px;font-size:12px" /></td><td><input type="text" class="hstack-input" value="20" style="padding:6px 10px;font-size:12px" /></td><td style="color:var(--text-muted);font-size:12px">每页条数</td></tr>
+              <tr><td><input type="text" class="hstack-input" placeholder="Key" style="padding:6px 10px;font-size:12px" /></td><td><input type="text" class="hstack-input" placeholder="Value" style="padding:6px 10px;font-size:12px" /></td><td></td></tr>
+            </tbody>
+          </table>
+
+          <!-- Response -->
+          <div class="test-response">
+            <div class="response-meta">
+              <span class="meta-badge status-ok">200 OK</span>
+              <span class="meta-badge time">48ms</span>
+              <span class="meta-badge size">1.2 KB</span>
+            </div>
+            <div class="json-viewer">
+              <div class="json-viewer-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--status-active)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                <span style="font-size:12px;font-weight:600;color:var(--status-active)">Response Body</span>
+              </div>
+              <div class="json-viewer-body" style="max-height:250px">{
+  <span class="syn-key">"code"</span>: <span class="syn-num">200</span>,
+  <span class="syn-key">"data"</span>: {
+    <span class="syn-key">"list"</span>: [{ <span class="syn-key">"id"</span>: <span class="syn-str">"a1b2"</span>, <span class="syn-key">"name"</span>: <span class="syn-str">"李四"</span> }],
+    <span class="syn-key">"total"</span>: <span class="syn-num">128</span>
+  }
+}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Import Drawer ═══════════════ -->
+  <div class="drawer-overlay" id="importDrawer" onclick="if(event.target===this)closeDrawer('importDrawer')">
+    <div class="drawer-panel">
+      <div class="drawer-light-bar"></div>
+      <div class="drawer-header">
+        <div class="drawer-header-left"><div class="glow-dot"></div><h3>导入接口</h3></div>
+        <button class="drawer-close" onclick="closeDrawer('importDrawer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="drawer-body">
+        <div class="upload-zone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <h4>拖拽文件到此处，或点击上传</h4>
+          <p>支持 OpenAPI / Swagger / HAR 格式</p>
+          <div class="format-tags">
+            <span class="format-tag">JSON</span>
+            <span class="format-tag">YAML</span>
+            <span class="format-tag">HAR</span>
+          </div>
+        </div>
+        <div class="import-result">
+          <h4>导入预览 — api-spec.yaml</h4>
+          <div class="import-group-label">Users</div>
+          <div class="import-item"><span class="method-tag get" style="font-size:9px;padding:1px 5px">GET</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">/users</span></div>
+          <div class="import-item"><span class="method-tag post" style="font-size:9px;padding:1px 5px">POST</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">/users</span></div>
+          <div class="import-item"><span class="method-tag get" style="font-size:9px;padding:1px 5px">GET</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">/users/:id</span></div>
+          <div class="import-group-label">Products</div>
+          <div class="import-item"><span class="method-tag get" style="font-size:9px;padding:1px 5px">GET</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">/products</span></div>
+          <div class="import-item"><span class="method-tag post" style="font-size:9px;padding:1px 5px">POST</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">/products</span></div>
+          <div class="import-item"><span class="method-tag get" style="font-size:9px;padding:1px 5px">GET</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">/products/:id</span></div>
+          <div class="import-group-label">Orders</div>
+          <div class="import-item"><span class="method-tag get" style="font-size:9px;padding:1px 5px">GET</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">/orders</span></div>
+          <div class="import-item"><span class="method-tag post" style="font-size:9px;padding:1px 5px">POST</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">/orders</span></div>
+        </div>
+      </div>
+      <div class="drawer-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeDrawer('importDrawer')">取消</button>
+        <button class="btn btn-primary btn-sm">确认导入 (9 接口)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Export Drawer ═══════════════ -->
+  <div class="drawer-overlay" id="exportDrawer" onclick="if(event.target===this)closeDrawer('exportDrawer')">
+    <div class="drawer-panel">
+      <div class="drawer-light-bar"></div>
+      <div class="drawer-header">
+        <div class="drawer-header-left"><div class="glow-dot"></div><h3>导出 Mock</h3></div>
+        <button class="drawer-close" onclick="closeDrawer('exportDrawer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="drawer-body">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <!-- JSON Option -->
+          <div style="border:1.5px solid var(--primary);border-radius:14px;padding:20px;background:var(--badge-bg);cursor:pointer">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary-glow),var(--scan-glow));display:flex;align-items:center;justify-content:center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div>
+                <h4 style="font-size:15px">JSON 规则文件</h4>
+                <p style="font-size:12px;color:var(--text-muted)">完整 Mock 规则，配合 json-server 或 CLI 使用</p>
+              </div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);background:var(--editor-bg);padding:8px 12px;border-radius:8px">ecommerce-mock-rules.json</div>
+          </div>
+          <!-- Mock.js Option -->
+          <div style="border:1.5px solid var(--card-border);border-radius:14px;padding:20px;cursor:pointer;transition:all 0.3s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--card-border)'">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary-glow),var(--scan-glow));display:flex;align-items:center;justify-content:center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+              </div>
+              <div>
+                <h4 style="font-size:15px">Mock.js 格式</h4>
+                <p style="font-size:12px;color:var(--text-muted)">含 Mock.js 占位符，可直接在 webpack/vite 拦截</p>
+              </div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);background:var(--editor-bg);padding:8px 12px;border-radius:8px">ecommerce-mock.js</div>
+          </div>
+        </div>
+      </div>
+      <div class="drawer-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeDrawer('exportDrawer')">取消</button>
+        <button class="btn btn-primary btn-sm">下载</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme
+    function toggleTheme(){
+      const h=document.documentElement,c=h.getAttribute('data-theme');
+      h.setAttribute('data-theme',c==='light'?'dark':'light');
+      const s=document.querySelector('.theme-toggle svg');
+      s.innerHTML=h.getAttribute('data-theme')==='dark'?'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>':'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    }
+
+    // Tab switching
+    function switchTab(id,el){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(id).classList.add('active');
+    }
+
+    // Interface selection
+    function selectIface(el){
+      document.querySelectorAll('.iface-item').forEach(i=>i.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    // Group toggle
+    function toggleGroup(header){
+      const arrow=header.querySelector('.group-arrow');
+      const items=header.nextElementSibling;
+      arrow.classList.toggle('open');
+      items.classList.toggle('collapsed');
+    }
+
+    // Add group inline
+    function showAddGroup(el){
+      el.style.display='none';
+      const input=document.createElement('input');
+      input.className='add-group-input';
+      input.placeholder='输入分组名称，回车确认';
+      el.parentElement.insertBefore(input,el);
+      input.focus();
+      input.addEventListener('keydown',function(e){
+        if(e.key==='Enter'&&this.value.trim()){
+          // Simulate adding group
+          this.remove();
+          el.style.display='flex';
+        }
+        if(e.key==='Escape'){
+          this.remove();
+          el.style.display='flex';
+        }
+      });
+      input.addEventListener('blur',function(){
+        this.remove();
+        el.style.display='flex';
+      });
+    }
+
+    // Drawer
+    function openDrawer(id){document.getElementById(id).classList.add('open')}
+    function closeDrawer(id){document.getElementById(id).classList.remove('open')}
+
+    // Test subtabs
+    document.querySelectorAll('.test-subtab').forEach(t=>{
+      t.addEventListener('click',function(){
+        document.querySelectorAll('.test-subtab').forEach(s=>s.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // ═══════════════ Particle System ═══════════════
+    const pc=document.getElementById('particle-canvas'),pctx=pc.getContext('2d');
+    const fc=document.getElementById('flow-canvas'),fctx=fc.getContext('2d');
+    function resizeCanvases(){pc.width=fc.width=window.innerWidth;pc.height=fc.height=window.innerHeight}
+    resizeCanvases();window.addEventListener('resize',resizeCanvases);
+
+    const particles=[];
+    for(let i=0;i<40;i++){
+      particles.push({x:Math.random()*pc.width,y:Math.random()*pc.height,size:1.5+Math.random()*2,speedX:(Math.random()-0.5)*0.3,speedY:(Math.random()-0.5)*0.3,hue:[250,190,340][Math.floor(Math.random()*3)],phase:Math.random()*Math.PI*2,breathSpeed:0.01+Math.random()*0.02});
+    }
+    let mouseX=-1000,mouseY=-1000;
+    document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
+
+    function animateParticles(){
+      pctx.clearRect(0,0,pc.width,pc.height);
+      const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+      particles.forEach(p=>{
+        p.phase+=p.breathSpeed;
+        const alpha=(isDark?0.6:0.3)*(0.5+0.5*Math.sin(p.phase));
+        const dx=p.x-mouseX,dy=p.y-mouseY,dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<150){p.x+=dx*0.003;p.y+=dy*0.003}
+        p.x+=p.speedX;p.y+=p.speedY;
+        if(p.x<0)p.x=pc.width;if(p.x>pc.width)p.x=0;
+        if(p.y<0)p.y=pc.height;if(p.y>pc.height)p.y=0;
+        pctx.beginPath();pctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+        pctx.fillStyle=`hsla(${p.hue},${isDark?'80%':'70%'},${isDark?'70%':'55%'},${alpha})`;
+        pctx.fill();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    const flowLines=[];
+    for(let i=0;i<3;i++){
+      const pts=[];const n=6+Math.floor(Math.random()*4);
+      for(let j=0;j<n;j++)pts.push({x:Math.random()*fc.width,y:Math.random()*fc.height});
+      flowLines.push({points:pts,progress:Math.random(),speed:0.0003+Math.random()*0.0005,hue:Math.random()<0.6?250:190,width:1+Math.random()*2});
+    }
+    function animateFlows(){
+      fctx.clearRect(0,0,fc.width,fc.height);
+      const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+      flowLines.forEach(fl=>{
+        fl.progress+=fl.speed;if(fl.progress>1)fl.progress=0;
+        const idx=fl.progress*(fl.points.length-1),i=Math.floor(idx),t=idx-i;
+        const p1=fl.points[Math.min(i,fl.points.length-1)],p2=fl.points[Math.min(i+1,fl.points.length-1)];
+        const gx=p1.x+(p2.x-p1.x)*t,gy=p1.y+(p2.y-p1.y)*t;
+        const alpha=isDark?0.08:0.04;
+        fctx.beginPath();fctx.moveTo(fl.points[0].x,fl.points[0].y);
+        for(let k=1;k<fl.points.length;k++)fctx.lineTo(fl.points[k].x,fl.points[k].y);
+        fctx.strokeStyle=`hsla(${fl.hue},70%,60%,${alpha})`;fctx.lineWidth=fl.width;fctx.stroke();
+        const dotAlpha=isDark?0.5:0.25;
+        const grad=fctx.createRadialGradient(gx,gy,0,gx,gy,20);
+        grad.addColorStop(0,`hsla(${fl.hue},70%,60%,${dotAlpha})`);
+        grad.addColorStop(1,`hsla(${fl.hue},70%,60%,0)`);
+        fctx.beginPath();fctx.arc(gx,gy,20,0,Math.PI*2);fctx.fillStyle=grad;fctx.fill();
+      });
+      requestAnimationFrame(animateFlows);
+    }
+    animateFlows();
+  </script>
+</body>
+</html>

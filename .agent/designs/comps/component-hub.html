@@ -1,0 +1,1207 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HStack Component Hub · 组件目录</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════ Theme Variables ═══════════════ */
+    [data-theme='light'] {
+      --bg-start: #f5f3ff; --bg-end: #edf2ff;
+      --card-bg: rgba(255,255,255,0.55); --card-border: rgba(93,95,239,0.12);
+      --card-shadow: 0 8px 32px rgba(93,95,239,0.1), 0 0 60px rgba(93,95,239,0.05);
+      --primary: #5d5fef; --primary-glow: rgba(93,95,239,0.35);
+      --secondary: #00d2ff; --accent: #ff7a9e;
+      --text: #1e1e2f; --text-secondary: #4a4a6a; --text-muted: #8e8ea0;
+      --input-bg: rgba(255,255,255,0.5); --input-border: rgba(93,95,239,0.25);
+      --nav-bg: rgba(245,243,255,0.72);
+      --scan-color: rgba(93,95,239,0.5); --scan-glow: rgba(93,95,239,0.15);
+      --particle-alpha: 0.3; --flow-alpha: 0.06;
+      --table-hover: rgba(93,95,239,0.06); --table-selected: rgba(93,95,239,0.12);
+      --overlay: rgba(237,242,255,0.6); --badge-bg: rgba(93,95,239,0.08);
+      --sidebar-active: rgba(93,95,239,0.1);
+      --code-bg: rgba(93,95,239,0.05);
+      --category-inputs: #5d5fef; --category-feedback: #ff7a9e;
+      --category-layout: #00d2ff; --category-navigation: #fca130;
+      --category-data: #49cc90;
+    }
+    [data-theme='dark'] {
+      --bg-start: #0f0a1e; --bg-end: #1a1035;
+      --card-bg: rgba(30,22,60,0.6); --card-border: rgba(133,130,255,0.18);
+      --card-shadow: 0 8px 32px rgba(133,130,255,0.12), 0 0 60px rgba(58,224,217,0.06);
+      --primary: #8582ff; --primary-glow: rgba(133,130,255,0.4);
+      --secondary: #3ae0d9; --accent: #ff6b8b;
+      --text: #ede9ff; --text-secondary: #b8b0d4; --text-muted: #7a7294;
+      --input-bg: rgba(30,22,60,0.4); --input-border: rgba(133,130,255,0.3);
+      --nav-bg: rgba(15,10,30,0.78);
+      --scan-color: rgba(133,130,255,0.7); --scan-glow: rgba(58,224,217,0.2);
+      --particle-alpha: 0.6; --flow-alpha: 0.1;
+      --table-hover: rgba(58,224,217,0.06); --table-selected: rgba(133,130,255,0.15);
+      --overlay: rgba(15,10,30,0.7); --badge-bg: rgba(133,130,255,0.12);
+      --sidebar-active: rgba(133,130,255,0.12);
+      --code-bg: rgba(133,130,255,0.08);
+      --category-inputs: #8582ff; --category-feedback: #ff6b8b;
+      --category-layout: #3ae0d9; --category-navigation: #fca130;
+      --category-data: #49cc90;
+    }
+
+    /* ═══════════════ Reset & Base ═══════════════ */
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      font-family: 'Quicksand', system-ui, sans-serif;
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      color: var(--text); min-height:100vh; overflow-x:hidden;
+      transition: background 0.6s ease, color 0.4s ease;
+    }
+    h1,h2,h3,h4 {
+      font-family:'Rajdhani','Quicksand',sans-serif;
+      font-weight:700; letter-spacing:0.02em;
+    }
+    a { color:var(--primary); text-decoration:none; }
+
+    /* ═══════════════ Canvas Layers ═══════════════ */
+    #particle-canvas,#flow-canvas {
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      pointer-events:none; z-index:0;
+    }
+
+    /* ═══════════════ Layout ═══════════════ */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ═══════════════ Sidebar ═══════════════ */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 260px;
+      background: var(--card-bg);
+      backdrop-filter: blur(24px) saturate(1.2);
+      -webkit-backdrop-filter: blur(24px) saturate(1.2);
+      border-right: 1px solid var(--card-border);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.4s, border-color 0.4s;
+      overflow-y: auto;
+    }
+    .sidebar-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--card-border);
+      position: relative;
+    }
+    .sidebar-header::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+      opacity: 0.4;
+      animation: holoLine 4s ease-in-out infinite;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px; font-weight: 700;
+      color: var(--primary);
+    }
+    .sidebar-logo-icon {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary-glow), var(--scan-glow));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .sidebar-version {
+      font-size: 11px; color: var(--text-muted);
+      margin-top: 4px; font-weight: 500;
+    }
+
+    /* Sidebar Nav */
+    .sidebar-nav { padding: 16px 12px; flex: 1; }
+    .sidebar-section-title {
+      font-size: 11px; font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 8px 12px 6px;
+      margin-top: 8px;
+    }
+    .sidebar-section-title:first-child { margin-top: 0; }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+    .sidebar-link:hover {
+      color: var(--primary);
+      background: var(--badge-bg);
+    }
+    .sidebar-link.active {
+      color: var(--primary);
+      background: var(--sidebar-active);
+      font-weight: 600;
+    }
+    .sidebar-link.active::before {
+      content: '';
+      position: absolute; left: 0; top: 6px; bottom: 6px;
+      width: 3px;
+      background: linear-gradient(180deg, var(--primary), var(--secondary));
+      border-radius: 2px;
+      box-shadow: 0 0 8px var(--primary-glow);
+    }
+    .sidebar-link .link-icon {
+      width: 20px; height: 20px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .sidebar-link .cat-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sidebar-link .badge {
+      margin-left: auto;
+      font-size: 11px; font-weight: 600;
+      padding: 1px 8px;
+      border-radius: 8px;
+      background: var(--badge-bg);
+      color: var(--text-muted);
+    }
+
+    /* Sidebar Footer */
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--card-border);
+    }
+    .theme-toggle {
+      width: 100%; display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px; border-radius: 10px;
+      cursor: pointer; font-size: 13px;
+      color: var(--text-secondary);
+      background: transparent; border: none;
+      transition: all 0.25s ease;
+    }
+    .theme-toggle:hover { background: var(--badge-bg); }
+    .toggle-switch {
+      width: 40px; height: 22px;
+      border-radius: 11px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      position: relative;
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+    }
+    .toggle-switch .knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      box-shadow: 0 0 6px var(--primary-glow);
+    }
+    [data-theme='dark'] .toggle-switch .knob {
+      transform: translateX(18px);
+    }
+
+    /* ═══════════════ Main Content ═══════════════ */
+    .main-content {
+      margin-left: 260px;
+      flex: 1;
+      min-height: 100vh;
+    }
+
+    /* ═══════════════ Top Bar ═══════════════ */
+    .top-bar {
+      position: sticky; top: 0;
+      z-index: 40;
+      background: var(--nav-bg);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0 32px;
+      height: 64px;
+      display: flex; align-items: center; gap: 16px;
+      position: relative;
+    }
+    .top-bar::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+      opacity: 0.5;
+      animation: holoLine 4s ease-in-out infinite;
+    }
+
+    /* Search */
+    .search-box {
+      position: relative;
+      flex: 1;
+      max-width: 480px;
+    }
+    .search-box .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 14px;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      border-radius: 12px;
+      border: 1.5px solid var(--input-border);
+      background: var(--input-bg);
+      backdrop-filter: blur(8px);
+      font-family: 'Quicksand', system-ui, sans-serif;
+      font-size: 14px; font-weight: 500;
+      color: var(--text);
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    .search-input::placeholder {
+      color: var(--text-muted);
+      font-size: 13px; font-weight: 300;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 16px var(--primary-glow), inset 0 0 8px var(--scan-glow);
+    }
+    .search-shortcut {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 11px; font-weight: 600;
+      color: var(--text-muted);
+      background: var(--badge-bg);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+      pointer-events: none;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--text-muted);
+    }
+    .breadcrumb a { color: var(--text-secondary); }
+    .breadcrumb a:hover { color: var(--primary); }
+    .breadcrumb .sep { color: var(--text-muted); }
+
+    /* ═══════════════ Page Content ═══════════════ */
+    .page-content {
+      padding: 32px;
+      max-width: 1280px;
+    }
+
+    /* Page Header */
+    .page-header {
+      margin-bottom: 32px;
+    }
+    .page-header h1 {
+      font-size: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex; gap: 12px;
+      margin-top: 20px;
+    }
+    .stat-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px;
+      border-radius: 10px;
+      background: var(--badge-bg);
+      border: 1px solid var(--card-border);
+      font-size: 13px; font-weight: 600;
+      color: var(--text-secondary);
+      backdrop-filter: blur(8px);
+    }
+    .stat-chip .stat-num {
+      color: var(--primary);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+    }
+
+    /* ═══════════════ Category Section ═══════════════ */
+    .category-section {
+      margin-bottom: 40px;
+    }
+    .category-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .category-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .category-dot.inputs { color: var(--category-inputs); background: var(--category-inputs); }
+    .category-dot.feedback { color: var(--category-feedback); background: var(--category-feedback); }
+    .category-dot.layout { color: var(--category-layout); background: var(--category-layout); }
+    .category-dot.navigation { color: var(--category-navigation); background: var(--category-navigation); }
+    .category-dot.data-display { color: var(--category-data); background: var(--category-data); }
+
+    .category-title {
+      font-size: 20px;
+      color: var(--text);
+    }
+    .category-count {
+      font-size: 12px; font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 8px;
+      background: var(--badge-bg);
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════ Component Cards Grid ═══════════════ */
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .comp-card {
+      position: relative;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px) saturate(1.2);
+      -webkit-backdrop-filter: blur(16px) saturate(1.2);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 0;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: var(--card-shadow);
+    }
+    .comp-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 12px 40px var(--primary-glow), 0 0 60px var(--scan-glow);
+    }
+
+    /* Card scan edge */
+    .comp-card .scan-edge {
+      position: absolute; inset: 0;
+      border-radius: 16px;
+      pointer-events: none;
+      background: conic-gradient(
+        from var(--scan-angle, 0deg),
+        transparent 0%,
+        var(--scan-color) 8%,
+        transparent 16%
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      padding: 1.5px;
+      animation: scanEdge 5s linear infinite;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .comp-card:hover .scan-edge { opacity: 1; }
+
+    /* Card Preview Area */
+    .comp-card-preview {
+      height: 140px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--badge-bg);
+      border-bottom: 1px solid var(--card-border);
+      position: relative;
+      overflow: hidden;
+    }
+    .comp-card-preview .preview-icon {
+      font-size: 40px;
+      opacity: 0.6;
+    }
+    .comp-card-preview .preview-line {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      opacity: 0.4;
+    }
+
+    /* Mini Table Preview */
+    .preview-table-mini {
+      width: 80%;
+      opacity: 0.5;
+    }
+    .preview-table-mini .pt-row {
+      display: flex; gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .preview-table-mini .pt-row:last-child { border-bottom: none; }
+    .preview-table-mini .pt-cell {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--text-muted);
+      opacity: 0.3;
+    }
+    .preview-table-mini .pt-cell:nth-child(1) { width: 40%; }
+    .preview-table-mini .pt-cell:nth-child(2) { width: 35%; }
+    .preview-table-mini .pt-cell:nth-child(3) { width: 25%; }
+
+    /* Mini Dialog Preview */
+    .preview-dialog-mini {
+      width: 70%; height: 80px;
+      border-radius: 10px;
+      border: 1.5px solid var(--card-border);
+      background: var(--card-bg);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      opacity: 0.6;
+    }
+    .preview-dialog-mini .pd-header {
+      height: 24px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex; align-items: center;
+      padding: 0 10px;
+    }
+    .preview-dialog-mini .pd-header-line {
+      width: 20px; height: 6px;
+      border-radius: 3px;
+      background: var(--primary);
+      opacity: 0.5;
+    }
+    .preview-dialog-mini .pd-body {
+      flex: 1;
+      padding: 8px 10px;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .preview-dialog-mini .pd-line {
+      height: 5px; border-radius: 3px;
+      background: var(--text-muted); opacity: 0.2;
+    }
+    .preview-dialog-mini .pd-line:nth-child(1) { width: 80%; }
+    .preview-dialog-mini .pd-line:nth-child(2) { width: 60%; }
+
+    /* Mini Confirm Preview */
+    .preview-confirm-mini {
+      width: 65%; height: 90px;
+      border-radius: 10px;
+      border: 1.5px solid var(--card-border);
+      background: var(--card-bg);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 8px;
+      opacity: 0.6;
+    }
+    .preview-confirm-mini .pc-icon {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+    .preview-confirm-mini .pc-line {
+      height: 5px; border-radius: 3px;
+      background: var(--text-muted); opacity: 0.2;
+    }
+    .preview-confirm-mini .pc-line:nth-child(2) { width: 60%; }
+    .preview-confirm-mini .pc-line:nth-child(3) { width: 45%; }
+    .preview-confirm-mini .pc-btns {
+      display: flex; gap: 6px; margin-top: 4px;
+    }
+    .preview-confirm-mini .pc-btn {
+      height: 16px; border-radius: 4px;
+      opacity: 0.3;
+    }
+    .preview-confirm-mini .pc-btn:nth-child(1) { width: 30px; background: var(--text-muted); }
+    .preview-confirm-mini .pc-btn:nth-child(2) { width: 40px; background: var(--accent); }
+
+    /* Mini Card Preview */
+    .preview-card-mini {
+      width: 65%; height: 80px;
+      border-radius: 10px;
+      border: 1.5px solid var(--card-border);
+      background: var(--card-bg);
+      overflow: hidden;
+      opacity: 0.6;
+    }
+    .preview-card-mini .pmc-header {
+      height: 28px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex; align-items: center;
+      padding: 0 10px; gap: 6px;
+    }
+    .preview-card-mini .pmc-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--primary); opacity: 0.4;
+    }
+    .preview-card-mini .pmc-title {
+      width: 30px; height: 6px; border-radius: 3px;
+      background: var(--text-muted); opacity: 0.3;
+    }
+    .preview-card-mini .pmc-body {
+      padding: 6px 10px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .preview-card-mini .pmc-line {
+      height: 4px; border-radius: 2px;
+      background: var(--text-muted); opacity: 0.15;
+    }
+    .preview-card-mini .pmc-line:nth-child(1) { width: 90%; }
+    .preview-card-mini .pmc-line:nth-child(2) { width: 70%; }
+
+    /* Mini TablePage Preview */
+    .preview-tablepage-mini {
+      width: 85%;
+      opacity: 0.5;
+    }
+    .preview-tablepage-mini .ptp-filter {
+      display: flex; gap: 6px; margin-bottom: 8px;
+    }
+    .preview-tablepage-mini .ptp-filter-item {
+      height: 16px; border-radius: 4px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+    }
+    .preview-tablepage-mini .ptp-filter-item:nth-child(1) { width: 35%; }
+    .preview-tablepage-mini .ptp-filter-item:nth-child(2) { width: 25%; }
+    .preview-tablepage-mini .ptp-filter-item:nth-child(3) { width: 20%; }
+    .preview-tablepage-mini .ptp-table {
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .preview-tablepage-mini .ptp-header {
+      display: flex; gap: 8px;
+      padding: 6px 8px;
+      background: var(--badge-bg);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .preview-tablepage-mini .ptp-hcell {
+      height: 6px; border-radius: 3px;
+      background: var(--primary); opacity: 0.3;
+    }
+    .preview-tablepage-mini .ptp-hcell:nth-child(1) { width: 35%; }
+    .preview-tablepage-mini .ptp-hcell:nth-child(2) { width: 30%; }
+    .preview-tablepage-mini .ptp-hcell:nth-child(3) { width: 20%; }
+    .preview-tablepage-mini .ptp-row {
+      display: flex; gap: 8px;
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .preview-tablepage-mini .ptp-row:last-child { border-bottom: none; }
+    .preview-tablepage-mini .ptp-cell {
+      height: 5px; border-radius: 3px;
+      background: var(--text-muted); opacity: 0.2;
+    }
+    .preview-tablepage-mini .ptp-cell:nth-child(1) { width: 35%; }
+    .preview-tablepage-mini .ptp-cell:nth-child(2) { width: 30%; }
+    .preview-tablepage-mini .ptp-cell:nth-child(3) { width: 20%; }
+    .preview-tablepage-mini .ptp-pager {
+      display: flex; justify-content: center; gap: 4px;
+      margin-top: 8px;
+    }
+    .preview-tablepage-mini .ptp-page {
+      width: 14px; height: 14px;
+      border-radius: 4px;
+      background: var(--badge-bg);
+      border: 1px solid var(--card-border);
+    }
+    .preview-tablepage-mini .ptp-page.active {
+      background: var(--primary); opacity: 0.4;
+      border-color: transparent;
+    }
+
+    /* Card Info */
+    .comp-card-info {
+      padding: 16px 20px;
+    }
+    .comp-card-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px; font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .comp-card-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .comp-card-tags {
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .comp-card-tag {
+      font-size: 11px; font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 8px;
+      background: var(--badge-bg);
+      color: var(--text-muted);
+    }
+    .comp-card-tag.cat-tag {
+      border: 1px solid var(--card-border);
+    }
+
+    /* ═══════════════ Animations ═══════════════ */
+    @keyframes holoLine {
+      0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
+      50% { opacity: 0.7; transform: scaleX(1); }
+    }
+    @keyframes scanEdge {
+      to { --scan-angle: 360deg; }
+    }
+    @keyframes breathe {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @property --scan-angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    .comp-card { animation: fadeInUp 0.6s ease forwards; }
+    .comp-card:nth-child(2) { animation-delay: 0.05s; }
+    .comp-card:nth-child(3) { animation-delay: 0.1s; }
+    .comp-card:nth-child(4) { animation-delay: 0.15s; }
+    .comp-card:nth-child(5) { animation-delay: 0.2s; }
+    .comp-card:nth-child(6) { animation-delay: 0.25s; }
+    .comp-card:nth-child(7) { animation-delay: 0.3s; }
+
+    /* ═══════════════ Responsive ═══════════════ */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; }
+      .page-content { padding: 20px 16px; }
+      .component-grid { grid-template-columns: 1fr; }
+      .top-bar { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Particle Canvas -->
+  <canvas id="particle-canvas"></canvas>
+  <canvas id="flow-canvas"></canvas>
+
+  <div class="app-layout">
+    <!-- ═══════════ Sidebar ═══════════ -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">⚡</div>
+          <span>Component Hub</span>
+        </div>
+        <div class="sidebar-version">v0.1.0 · @hstack/shared-ui</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-title">概览</div>
+        <a class="sidebar-link active" href="#">
+          <span class="link-icon">🏠</span>
+          全部组件
+        </a>
+        <a class="sidebar-link" href="#">
+          <span class="link-icon">🚀</span>
+          快速上手
+        </a>
+
+        <div class="sidebar-section-title">通用组件</div>
+        <a class="sidebar-link" href="#">
+          <span class="cat-dot" style="background:var(--category-inputs)"></span>
+          Button
+          <span class="badge">inputs</span>
+        </a>
+        <a class="sidebar-link" href="#">
+          <span class="cat-dot" style="background:var(--category-data)"></span>
+          Table
+          <span class="badge">data</span>
+        </a>
+        <a class="sidebar-link" href="#">
+          <span class="cat-dot" style="background:var(--category-feedback)"></span>
+          Dialog
+          <span class="badge">feedback</span>
+        </a>
+        <a class="sidebar-link" href="#">
+          <span class="cat-dot" style="background:var(--category-feedback)"></span>
+          Confirm
+          <span class="badge">feedback</span>
+        </a>
+        <a class="sidebar-link" href="#">
+          <span class="cat-dot" style="background:var(--category-layout)"></span>
+          Card
+          <span class="badge">layout</span>
+        </a>
+
+        <div class="sidebar-section-title">组合组件</div>
+        <a class="sidebar-link" href="#">
+          <span class="cat-dot" style="background:var(--category-data)"></span>
+          TablePage
+          <span class="badge">data</span>
+        </a>
+        <a class="sidebar-link" href="#">
+          <span class="cat-dot" style="background:var(--category-feedback)"></span>
+          FormDialog
+          <span class="badge">feedback</span>
+        </a>
+        <a class="sidebar-link" href="#">
+          <span class="cat-dot" style="background:var(--category-layout)"></span>
+          DetailCard
+          <span class="badge">layout</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <span>🌙 深色模式</span>
+          <div class="toggle-switch"><div class="knob"></div></div>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ═══════════ Main Content ═══════════ -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" type="text" placeholder="搜索组件名称、描述…" />
+          <span class="search-shortcut">⌘K</span>
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <!-- Page Header -->
+        <div class="page-header">
+          <h1>组件目录</h1>
+          <p>HStack 组件库提供通用基础组件与组合组件两层抽象，所有组件基于 HeroUI 二次封装，遵循轻科幻活力光感设计规范。</p>
+          <div class="stats-bar">
+            <div class="stat-chip">
+              <span>通用组件</span>
+              <span class="stat-num">5</span>
+            </div>
+            <div class="stat-chip">
+              <span>组合组件</span>
+              <span class="stat-num">3</span>
+            </div>
+            <div class="stat-chip">
+              <span>分类</span>
+              <span class="stat-num">5</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category: Inputs -->
+        <section class="category-section">
+          <div class="category-header">
+            <div class="category-dot inputs"></div>
+            <h2 class="category-title">Inputs · 输入类</h2>
+            <span class="category-count">1</span>
+          </div>
+          <div class="component-grid">
+            <div class="comp-card" onclick="location.href='component-detail.html'">
+              <div class="scan-edge"></div>
+              <div class="comp-card-preview">
+                <div style="display:flex;align-items:center;gap:8px;opacity:0.5;">
+                  <div style="padding:8px 24px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;font-size:12px;font-weight:600;">Button</div>
+                  <div style="padding:8px 24px;border-radius:10px;border:1.5px solid var(--input-border);color:var(--primary);font-size:12px;font-weight:600;">Ghost</div>
+                </div>
+                <div class="preview-line"></div>
+              </div>
+              <div class="comp-card-info">
+                <div class="comp-card-name">Button</div>
+                <div class="comp-card-desc">HStack 主题按钮，基于 HeroUI Button 封装，统一尺寸与圆角。</div>
+                <div class="comp-card-tags">
+                  <span class="comp-card-tag cat-tag" style="color:var(--category-inputs)">inputs</span>
+                  <span class="comp-card-tag">primary</span>
+                  <span class="comp-card-tag">ghost</span>
+                  <span class="comp-card-tag">danger</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Category: Data Display -->
+        <section class="category-section">
+          <div class="category-header">
+            <div class="category-dot data-display"></div>
+            <h2 class="category-title">Data Display · 数据展示</h2>
+            <span class="category-count">2</span>
+          </div>
+          <div class="component-grid">
+            <div class="comp-card" onclick="location.href='component-detail.html'">
+              <div class="scan-edge"></div>
+              <div class="comp-card-preview">
+                <div class="preview-table-mini">
+                  <div class="pt-row"><div class="pt-cell"></div><div class="pt-cell"></div><div class="pt-cell"></div></div>
+                  <div class="pt-row"><div class="pt-cell"></div><div class="pt-cell"></div><div class="pt-cell"></div></div>
+                  <div class="pt-row"><div class="pt-cell"></div><div class="pt-cell"></div><div class="pt-cell"></div></div>
+                </div>
+                <div class="preview-line"></div>
+              </div>
+              <div class="comp-card-info">
+                <div class="comp-card-name">Table</div>
+                <div class="comp-card-desc">数据表格组件，支持分页、排序、行选择、操作列，内容区自适应。</div>
+                <div class="comp-card-tags">
+                  <span class="comp-card-tag cat-tag" style="color:var(--category-data)">data-display</span>
+                  <span class="comp-card-tag">分页</span>
+                  <span class="comp-card-tag">排序</span>
+                  <span class="comp-card-tag">行选择</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="comp-card" onclick="location.href='component-detail.html'">
+              <div class="scan-edge"></div>
+              <div class="comp-card-preview">
+                <div class="preview-tablepage-mini">
+                  <div class="ptp-filter">
+                    <div class="ptp-filter-item"></div>
+                    <div class="ptp-filter-item"></div>
+                    <div class="ptp-filter-item"></div>
+                  </div>
+                  <div class="ptp-table">
+                    <div class="ptp-header">
+                      <div class="ptp-hcell"></div><div class="ptp-hcell"></div><div class="ptp-hcell"></div>
+                    </div>
+                    <div class="ptp-row"><div class="ptp-cell"></div><div class="ptp-cell"></div><div class="ptp-cell"></div></div>
+                    <div class="ptp-row"><div class="ptp-cell"></div><div class="ptp-cell"></div><div class="ptp-cell"></div></div>
+                  </div>
+                  <div class="ptp-pager">
+                    <div class="ptp-page"></div>
+                    <div class="ptp-page active"></div>
+                    <div class="ptp-page"></div>
+                  </div>
+                </div>
+                <div class="preview-line"></div>
+              </div>
+              <div class="comp-card-info">
+                <div class="comp-card-name">TablePage</div>
+                <div class="comp-card-desc">列表页全套组合组件，包含筛选框、数据表格、分页器，自适应布局。</div>
+                <div class="comp-card-tags">
+                  <span class="comp-card-tag cat-tag" style="color:var(--category-data)">data-display</span>
+                  <span class="comp-card-tag">组合组件</span>
+                  <span class="comp-card-tag">筛选</span>
+                  <span class="comp-card-tag">分页</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Category: Feedback -->
+        <section class="category-section">
+          <div class="category-header">
+            <div class="category-dot feedback"></div>
+            <h2 class="category-title">Feedback · 反馈类</h2>
+            <span class="category-count">3</span>
+          </div>
+          <div class="component-grid">
+            <div class="comp-card" onclick="location.href='component-detail.html'">
+              <div class="scan-edge"></div>
+              <div class="comp-card-preview">
+                <div class="preview-dialog-mini">
+                  <div class="pd-header"><div class="pd-header-line"></div></div>
+                  <div class="pd-body"><div class="pd-line"></div><div class="pd-line"></div></div>
+                </div>
+                <div class="preview-line"></div>
+              </div>
+              <div class="comp-card-info">
+                <div class="comp-card-name">Dialog</div>
+                <div class="comp-card-desc">模态对话框，预设五种尺寸，支持头部/底部插槽与滚动锁定。</div>
+                <div class="comp-card-tags">
+                  <span class="comp-card-tag cat-tag" style="color:var(--category-feedback)">feedback</span>
+                  <span class="comp-card-tag">模态</span>
+                  <span class="comp-card-tag">插槽</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="comp-card" onclick="location.href='component-detail.html'">
+              <div class="scan-edge"></div>
+              <div class="comp-card-preview">
+                <div class="preview-confirm-mini">
+                  <div class="pc-icon"></div>
+                  <div class="pc-line"></div>
+                  <div class="pc-line"></div>
+                  <div class="pc-btns"><div class="pc-btn"></div><div class="pc-btn"></div></div>
+                </div>
+                <div class="preview-line"></div>
+              </div>
+              <div class="comp-card-info">
+                <div class="comp-card-name">Confirm</div>
+                <div class="comp-card-desc">命令式确认弹窗，Promise 化调用，支持 info / warning / danger 三种风格。</div>
+                <div class="comp-card-tags">
+                  <span class="comp-card-tag cat-tag" style="color:var(--category-feedback)">feedback</span>
+                  <span class="comp-card-tag">命令式</span>
+                  <span class="comp-card-tag">Promise</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="comp-card" onclick="location.href='component-detail.html'">
+              <div class="scan-edge"></div>
+              <div class="comp-card-preview">
+                <div class="preview-dialog-mini" style="width:60%;">
+                  <div class="pd-header">
+                    <div class="pd-header-line" style="width:12px;"></div>
+                    <div style="width:16px;height:6px;border-radius:3px;background:var(--text-muted);opacity:0.2;margin-left:4px;"></div>
+                  </div>
+                  <div class="pd-body" style="gap:6px;">
+                    <div class="pd-line" style="width:90%;"></div>
+                    <div class="pd-line" style="width:75%;"></div>
+                    <div class="pd-line" style="width:60%;"></div>
+                  </div>
+                  <div style="padding:6px 10px;border-top:1px solid var(--card-border);display:flex;justify-content:flex-end;gap:4px;">
+                    <div style="width:20px;height:8px;border-radius:4px;background:var(--text-muted);opacity:0.2;"></div>
+                    <div style="width:24px;height:8px;border-radius:4px;background:var(--primary);opacity:0.3;"></div>
+                  </div>
+                </div>
+                <div class="preview-line"></div>
+              </div>
+              <div class="comp-card-info">
+                <div class="comp-card-name">FormDialog</div>
+                <div class="comp-card-desc">表单弹窗组合组件，内置 create/edit 模式、校验、异步提交。</div>
+                <div class="comp-card-tags">
+                  <span class="comp-card-tag cat-tag" style="color:var(--category-feedback)">feedback</span>
+                  <span class="comp-card-tag">组合组件</span>
+                  <span class="comp-card-tag">表单</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Category: Layout -->
+        <section class="category-section">
+          <div class="category-header">
+            <div class="category-dot layout"></div>
+            <h2 class="category-title">Layout · 布局类</h2>
+            <span class="category-count">2</span>
+          </div>
+          <div class="component-grid">
+            <div class="comp-card" onclick="location.href='component-detail.html'">
+              <div class="scan-edge"></div>
+              <div class="comp-card-preview">
+                <div class="preview-card-mini">
+                  <div class="pmc-header"><div class="pmc-dot"></div><div class="pmc-title"></div></div>
+                  <div class="pmc-body"><div class="pmc-line"></div><div class="pmc-line"></div></div>
+                </div>
+                <div class="preview-line"></div>
+              </div>
+              <div class="comp-card-info">
+                <div class="comp-card-name">Card</div>
+                <div class="comp-card-desc">卡片容器组件，支持 elevated / outlined / ghost 三种变体与交互态。</div>
+                <div class="comp-card-tags">
+                  <span class="comp-card-tag cat-tag" style="color:var(--category-layout)">layout</span>
+                  <span class="comp-card-tag">变体</span>
+                  <span class="comp-card-tag">交互态</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="comp-card" onclick="location.href='component-detail.html'">
+              <div class="scan-edge"></div>
+              <div class="comp-card-preview">
+                <div class="preview-card-mini" style="width:70%;">
+                  <div class="pmc-header">
+                    <div class="pmc-dot"></div>
+                    <div class="pmc-title" style="width:40px;"></div>
+                  </div>
+                  <div class="pmc-body" style="gap:5px;">
+                    <div style="display:flex;gap:8px;margin-bottom:4px;">
+                      <div style="width:50px;height:5px;border-radius:3px;background:var(--text-muted);opacity:0.2;"></div>
+                      <div style="width:40px;height:5px;border-radius:3px;background:var(--primary);opacity:0.3;"></div>
+                    </div>
+                    <div class="pmc-line" style="width:95%;"></div>
+                    <div class="pmc-line" style="width:80%;"></div>
+                    <div class="pmc-line" style="width:60%;"></div>
+                  </div>
+                </div>
+                <div class="preview-line"></div>
+              </div>
+              <div class="comp-card-info">
+                <div class="comp-card-name">DetailCard</div>
+                <div class="comp-card-desc">详情卡片组合组件，声明式键值对展示，支持分组与自定义渲染。</div>
+                <div class="comp-card-tags">
+                  <span class="comp-card-tag cat-tag" style="color:var(--category-layout)">layout</span>
+                  <span class="comp-card-tag">组合组件</span>
+                  <span class="comp-card-tag">描述列表</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ═══════════════ Theme Toggle ═══════════════
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', next);
+    }
+
+    // ═══════════════ Particle System ═══════════════
+    (function() {
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      let w, h, particles = [];
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      class Particle {
+        constructor() { this.reset(); }
+        reset() {
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.size = 1.5 + Math.random() * 2.5;
+          this.vx = (Math.random() - 0.5) * 0.3;
+          this.vy = (Math.random() - 0.5) * 0.3;
+          this.alpha = 0.2 + Math.random() * 0.5;
+          this.breathSpeed = 0.01 + Math.random() * 0.02;
+          this.breathPhase = Math.random() * Math.PI * 2;
+          const r = Math.random();
+          if (r < 0.5) this.hue = 250;
+          else if (r < 0.75) this.hue = 190;
+          else this.hue = 340;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.breathPhase += this.breathSpeed;
+          if (this.x < 0 || this.x > w || this.y < 0 || this.y > h) this.reset();
+        }
+        draw() {
+          const a = this.alpha * (0.6 + 0.4 * Math.sin(this.breathPhase));
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          const finalA = isDark ? a * 2 : a;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${this.hue}, 80%, 65%, ${Math.min(finalA, 1)})`;
+          ctx.fill();
+          if (isDark) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${this.hue}, 80%, 65%, ${finalA * 0.15})`;
+            ctx.fill();
+          }
+        }
+      }
+
+      for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+      function animate() {
+        ctx.clearRect(0, 0, w, h);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+
+    // ═══════════════ Flow Lines ═══════════════
+    (function() {
+      const canvas = document.getElementById('flow-canvas');
+      const ctx = canvas.getContext('2d');
+      let w, h;
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      class FlowLine {
+        constructor() {
+          this.points = [];
+          const n = 6 + Math.floor(Math.random() * 4);
+          for (let i = 0; i < n; i++) {
+            this.points.push({ x: Math.random() * w, y: Math.random() * h });
+          }
+          this.t = Math.random();
+          this.speed = 0.0003 + Math.random() * 0.0005;
+          this.width = 1 + Math.random() * 2;
+          this.hue = Math.random() < 0.6 ? 250 : 190;
+        }
+        draw() {
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          const alpha = isDark ? 0.08 : 0.04;
+          const dotAlpha = isDark ? 0.5 : 0.25;
+
+          ctx.beginPath();
+          ctx.moveTo(this.points[0].x, this.points[0].y);
+          for (let i = 1; i < this.points.length - 1; i++) {
+            const cx = (this.points[i].x + this.points[i + 1].x) / 2;
+            const cy = (this.points[i].y + this.points[i + 1].y) / 2;
+            ctx.quadraticCurveTo(this.points[i].x, this.points[i].y, cx, cy);
+          }
+          ctx.strokeStyle = `hsla(${this.hue}, 70%, 60%, ${alpha})`;
+          ctx.lineWidth = this.width;
+          ctx.stroke();
+
+          this.t += this.speed;
+          if (this.t > 1) this.t = 0;
+          const pos = this.getPoint(this.t);
+          const grad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 20);
+          grad.addColorStop(0, `hsla(${this.hue}, 80%, 65%, ${dotAlpha})`);
+          grad.addColorStop(1, `hsla(${this.hue}, 80%, 65%, 0)`);
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+          ctx.fillStyle = grad;
+          ctx.fill();
+        }
+        getPoint(t) {
+          const total = this.points.length - 1;
+          const i = Math.min(Math.floor(t * total), total - 1);
+          const lt = (t * total) - i;
+          const p1 = this.points[i], p2 = this.points[i + 1];
+          return { x: p1.x + (p2.x - p1.x) * lt, y: p1.y + (p2.y - p1.y) * lt };
+        }
+      }
+
+      const lines = [];
+      for (let i = 0; i < 5; i++) lines.push(new FlowLine());
+
+      function animate() {
+        ctx.clearRect(0, 0, w, h);
+        lines.forEach(l => l.draw());
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+  </script>
+</body>
+</html>

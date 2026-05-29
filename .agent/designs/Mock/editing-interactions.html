@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mock 平台 · 编辑交互</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════ Theme Variables ═══════════════ */
+    [data-theme='light']{
+      --bg-start:#f5f3ff;--bg-end:#edf2ff;
+      --card-bg:rgba(255,255,255,0.55);--card-border:rgba(93,95,239,0.12);
+      --card-shadow:0 8px 32px rgba(93,95,239,0.1),0 0 60px rgba(93,95,239,0.05);
+      --primary:#5d5fef;--primary-glow:rgba(93,95,239,0.35);
+      --secondary:#00d2ff;--accent:#ff7a9e;
+      --text:#1e1e2f;--text-secondary:#4a4a6a;--text-muted:#8e8ea0;
+      --input-bg:rgba(255,255,255,0.5);--input-border:rgba(93,95,239,0.25);
+      --nav-bg:rgba(245,243,255,0.72);
+      --scan-color:rgba(93,95,239,0.5);--scan-glow:rgba(93,95,239,0.15);
+      --overlay:rgba(237,242,255,0.6);--badge-bg:rgba(93,95,239,0.08);
+      --table-hover:rgba(93,95,239,0.06);--table-selected:rgba(93,95,239,0.12);
+      --method-get:#61affe;--method-post:#49cc90;--method-put:#fca130;
+      --method-patch:#50e3c2;--method-delete:#f93e3e;
+      --editor-bg:rgba(255,255,255,0.35);--editor-line:rgba(93,95,239,0.06);
+      --sidebar-bg:rgba(255,255,255,0.4);--sidebar-border:rgba(93,95,239,0.08);
+    }
+    [data-theme='dark']{
+      --bg-start:#0f0a1e;--bg-end:#1a1035;
+      --card-bg:rgba(30,22,60,0.6);--card-border:rgba(133,130,255,0.18);
+      --card-shadow:0 8px 32px rgba(133,130,255,0.12),0 0 60px rgba(58,224,217,0.06);
+      --primary:#8582ff;--primary-glow:rgba(133,130,255,0.4);
+      --secondary:#3ae0d9;--accent:#ff6b8b;
+      --text:#ede9ff;--text-secondary:#b8b0d4;--text-muted:#7a7294;
+      --input-bg:rgba(30,22,60,0.4);--input-border:rgba(133,130,255,0.3);
+      --nav-bg:rgba(15,10,30,0.78);
+      --scan-color:rgba(133,130,255,0.7);--scan-glow:rgba(58,224,217,0.2);
+      --overlay:rgba(15,10,30,0.7);--badge-bg:rgba(133,130,255,0.12);
+      --table-hover:rgba(58,224,217,0.06);--table-selected:rgba(133,130,255,0.15);
+      --method-get:#61affe;--method-post:#49cc90;--method-put:#fca130;
+      --method-patch:#50e3c2;--method-delete:#f93e3e;
+      --editor-bg:rgba(15,10,30,0.5);--editor-line:rgba(133,130,255,0.08);
+      --sidebar-bg:rgba(20,15,45,0.5);--sidebar-border:rgba(133,130,255,0.1);
+    }
+
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Quicksand',system-ui,sans-serif;
+      background:linear-gradient(135deg,var(--bg-start),var(--bg-end));
+      color:var(--text);min-height:100vh;overflow-x:hidden;
+      transition:background 0.6s ease,color 0.4s ease;
+    }
+    h1,h2,h3,h4{font-family:'Rajdhani','Quicksand',sans-serif;font-weight:700;letter-spacing:0.02em}
+    a{color:var(--primary);text-decoration:none}
+
+    #particle-canvas,#flow-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+
+    /* ═══════════════ Navigation ═══════════════ */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid var(--card-border);transition:background 0.4s}
+    .nav-inner{max-width:1280px;margin:0 auto;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between}
+    .nav-logo{display:flex;align-items:center;gap:10px;font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--primary)}
+    .nav-logo svg{width:32px;height:32px}
+    .nav-hologram-line{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,var(--primary) 30%,var(--secondary) 70%,transparent 100%);opacity:0.5;animation:holoLine 4s ease-in-out infinite}
+    @keyframes holoLine{0%,100%{opacity:0.3;transform:scaleX(0.8)}50%{opacity:0.7;transform:scaleX(1)}}
+    .theme-toggle{width:48px;height:48px;border-radius:14px;border:1.5px solid var(--input-border);background:var(--input-bg);cursor:pointer;backdrop-filter:blur(8px);transition:all 0.3s ease;display:flex;align-items:center;justify-content:center}
+    .theme-toggle:hover{border-color:var(--primary);box-shadow:0 0 12px var(--primary-glow)}
+    .theme-toggle svg{width:18px;height:18px;color:var(--primary);transition:transform 0.4s cubic-bezier(0.68,-0.55,0.27,1.55)}
+    .theme-toggle:hover svg{transform:rotate(180deg)}
+
+    /* ═══════════════ Main ═══════════════ */
+    .main{position:relative;z-index:1;padding:96px 32px 48px;max-width:1280px;margin:0 auto}
+
+    .page-title{
+      font-size:clamp(28px,4vw,36px);margin-bottom:8px;
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      animation:fadeInUp 0.6s ease both;
+    }
+    .page-desc{font-size:15px;color:var(--text-secondary);margin-bottom:48px;animation:fadeInUp 0.6s ease both 0.05s}
+
+    /* Section */
+    .design-section{margin-bottom:64px}
+    .section-label{
+      font-size:20px;margin-bottom:8px;
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .section-desc{font-size:13px;color:var(--text-muted);margin-bottom:24px}
+
+    /* ═══════════════ Buttons ═══════════════ */
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:14px;font-family:'Quicksand',sans-serif;font-size:15px;font-weight:600;cursor:pointer;border:none;position:relative;overflow:hidden;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+    .btn:active{transform:scale(0.96)}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary),var(--secondary) 30%));color:#fff;box-shadow:0 4px 20px var(--primary-glow)}
+    .btn-primary::before{content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);transform:skewX(-20deg);transition:left 0.6s ease}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px var(--primary-glow)}
+    .btn-primary:hover::before{left:120%}
+    .btn-ghost{background:transparent;border:1.5px solid var(--input-border);color:var(--primary);backdrop-filter:blur(8px)}
+    .btn-ghost:hover{background:var(--badge-bg);border-color:var(--primary);box-shadow:0 0 16px var(--primary-glow)}
+    .btn-sm{padding:8px 18px;font-size:13px;border-radius:10px}
+    .btn-xs{padding:4px 10px;font-size:11px;border-radius:7px}
+    .btn-danger{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent),#ff4060 30%));color:#fff;box-shadow:0 4px 16px rgba(255,122,158,0.25)}
+    .btn-danger:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,122,158,0.35)}
+
+    /* ═══════════════ Form Fields ═══════════════ */
+    .form-group{margin-bottom:18px}
+    .form-label{display:block;font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:6px}
+    .form-label .required{color:var(--accent);margin-left:2px}
+    .hstack-input{width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid var(--input-border);background:var(--input-bg);backdrop-filter:blur(8px);font-family:'Quicksand',sans-serif;font-size:14px;color:var(--text);outline:none;transition:all 0.3s ease}
+    .hstack-input::placeholder{color:var(--text-muted);font-size:13px;font-weight:300}
+    .hstack-input:focus{border-color:var(--primary);box-shadow:0 0 16px var(--primary-glow),inset 0 0 8px var(--scan-glow)}
+    .hstack-input.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+    textarea.hstack-input{resize:vertical;min-height:80px}
+    .form-hint{font-size:11px;color:var(--text-muted);margin-top:4px}
+    .form-row{display:flex;gap:12px}
+    .form-row .form-group{flex:1}
+
+    /* ═══════════════ Demo Panels ═══════════════ */
+    .demo-row{display:flex;gap:24px;flex-wrap:wrap}
+    .demo-card{
+      background:var(--card-bg);backdrop-filter:blur(16px) saturate(1.2);
+      border:1px solid var(--card-border);border-radius:20px;
+      padding:28px;position:relative;overflow:hidden;
+      box-shadow:var(--card-shadow);flex:1;min-width:340px;
+    }
+    .demo-card .scan-edge{position:absolute;inset:0;border-radius:20px;pointer-events:none;background:conic-gradient(from var(--scan-angle,0deg),transparent 0%,var(--scan-color) 8%,transparent 16%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:1.5px;animation:scanEdge 5s linear infinite}
+    @property --scan-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+    @keyframes scanEdge{to{--scan-angle:360deg}}
+    .demo-card h4{font-size:16px;margin-bottom:16px;color:var(--text-secondary)}
+
+    /* ═══════════════ Dialog ═══════════════ */
+    .dialog-overlay{position:fixed;inset:0;z-index:200;background:var(--overlay);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.35s ease}
+    .dialog-overlay.open{opacity:1;pointer-events:auto}
+    .dialog-box{background:var(--card-bg);backdrop-filter:blur(24px);border:1px solid var(--card-border);border-radius:20px;max-width:560px;width:90%;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.2),0 0 80px var(--primary-glow);transform:scale(0.9) translateY(20px);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+    .dialog-overlay.open .dialog-box{transform:scale(1) translateY(0)}
+    .dialog-header-line{height:3px;background:linear-gradient(90deg,var(--primary),var(--secondary),var(--accent))}
+    .dialog-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0}
+    .dialog-header h3{font-size:20px}
+    .dialog-close{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--input-border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;color:var(--text-muted)}
+    .dialog-close:hover{border-color:var(--primary);color:var(--primary);box-shadow:0 0 12px var(--primary-glow);transform:rotate(90deg)}
+    .dialog-close svg{width:14px;height:14px}
+    .dialog-body{padding:20px 24px}
+    .dialog-footer{display:flex;justify-content:flex-end;gap:10px;padding:0 24px 24px}
+
+    /* ═══════════════ Method Tag ═══════════════ */
+    .method-tag{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;min-width:38px;text-align:center;flex-shrink:0;letter-spacing:0.5px}
+    .method-tag.get{background:rgba(97,175,254,0.12);color:var(--method-get)}
+    .method-tag.post{background:rgba(73,204,144,0.12);color:var(--method-post)}
+    .method-tag.put{background:rgba(252,161,48,0.12);color:var(--method-put)}
+    .method-tag.delete{background:rgba(249,62,62,0.12);color:var(--method-delete)}
+
+    /* Method Select */
+    .method-select{
+      display:flex;gap:4px;padding:4px;background:var(--badge-bg);border-radius:10px;
+      border:1px solid var(--card-border);
+    }
+    .method-option{
+      padding:6px 14px;border-radius:7px;font-family:'JetBrains Mono',monospace;
+      font-size:12px;font-weight:700;cursor:pointer;border:none;
+      background:transparent;transition:all 0.2s;
+    }
+    .method-option:hover{background:var(--card-bg)}
+    .method-option.selected{color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+    .method-option.get.selected{background:var(--method-get)}
+    .method-option.post.selected{background:var(--method-post)}
+    .method-option.put.selected{background:var(--method-put)}
+    .method-option.delete.selected{background:var(--method-delete)}
+
+    /* Emoji Row */
+    .emoji-row{display:flex;gap:8px;flex-wrap:wrap}
+    .emoji-option{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--card-border);background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1)}
+    .emoji-option:hover{transform:scale(1.1);border-color:var(--primary)}
+    .emoji-option.selected{border-color:var(--primary);background:var(--badge-bg);box-shadow:0 0 12px var(--primary-glow)}
+
+    /* Toggle */
+    .toggle{width:42px;height:24px;border-radius:12px;border:1.5px solid var(--input-border);background:var(--input-bg);cursor:pointer;position:relative;transition:all 0.3s;display:inline-block}
+    .toggle.on{background:var(--primary);border-color:var(--primary)}
+    .toggle .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:transform 0.3s cubic-bezier(0.68,-0.55,0.27,1.55)}
+    .toggle.on .knob{transform:translateX(18px)}
+
+    /* ═══════════════ Group Inline Edit ═══════════════ */
+    .sidebar-demo{
+      width:260px;background:var(--sidebar-bg);backdrop-filter:blur(16px);
+      border:1px solid var(--sidebar-border);border-radius:16px;
+      overflow:hidden;
+    }
+    .group-item{
+      display:flex;align-items:center;gap:8px;padding:8px 14px;
+      cursor:pointer;transition:background 0.2s;position:relative;
+    }
+    .group-item:hover{background:var(--table-hover)}
+    .group-item.editing{background:var(--table-selected)}
+    .group-arrow{width:16px;height:16px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);flex-shrink:0}
+    .group-arrow svg{width:12px;height:12px}
+    .group-name{flex:1;font-size:13px;font-weight:600;color:var(--text-secondary)}
+    .group-name-input{
+      flex:1;padding:4px 8px;border-radius:6px;border:1.5px solid var(--primary);
+      background:var(--input-bg);font-family:'Quicksand',sans-serif;font-size:13px;
+      color:var(--text);outline:none;box-shadow:0 0 8px var(--primary-glow);
+    }
+    .group-count{font-size:11px;color:var(--text-muted);background:var(--badge-bg);padding:1px 7px;border-radius:6px}
+    .group-edit-btn{opacity:0;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;cursor:pointer;color:var(--text-muted);transition:all 0.2s}
+    .group-item:hover .group-edit-btn{opacity:1}
+    .group-edit-btn:hover{color:var(--primary);background:var(--badge-bg)}
+    .group-edit-btn svg{width:11px;height:11px}
+    .add-group-link{display:flex;align-items:center;gap:6px;padding:8px 14px;color:var(--text-muted);font-size:12px;cursor:pointer;transition:color 0.2s}
+    .add-group-link:hover{color:var(--primary)}
+    .add-group-link svg{width:12px;height:12px}
+    .add-group-input-row{padding:6px 14px}
+    .add-group-input{
+      width:100%;padding:6px 10px;border-radius:8px;border:1.5px solid var(--primary);
+      background:var(--input-bg);font-family:'Quicksand',sans-serif;font-size:13px;
+      color:var(--text);outline:none;box-shadow:0 0 8px var(--primary-glow);
+    }
+
+    /* ═══════════════ Mock Editor ═══════════════ */
+    .editor-wrap{border:1px solid var(--card-border);border-radius:14px;overflow:hidden;background:var(--editor-bg);backdrop-filter:blur(12px);box-shadow:var(--card-shadow);position:relative}
+    .editor-toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--editor-line);background:var(--card-bg)}
+    .editor-toolbar-btn{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;color:var(--text-muted);background:transparent;border:1px solid var(--card-border);cursor:pointer;transition:all 0.2s}
+    .editor-toolbar-btn:hover{color:var(--primary);border-color:var(--primary);background:var(--badge-bg)}
+    .editor-toolbar-btn.primary{color:var(--primary);border-color:var(--primary)}
+    .editor-dots{display:flex;gap:5px;margin-right:8px}
+    .editor-dot{width:10px;height:10px;border-radius:50%}
+    .editor-dot:nth-child(1){background:#ff5f57}
+    .editor-dot:nth-child(2){background:#febc2e}
+    .editor-dot:nth-child(3){background:#28c840}
+    .editor-body{padding:16px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--text);min-height:200px;white-space:pre;overflow-x:auto}
+    .syn-key{color:var(--secondary)}.syn-str{color:var(--accent)}.syn-num{color:var(--method-put)}.syn-mock{color:var(--primary);font-weight:600}
+
+    /* Autocomplete Popup */
+    .autocomplete-popup{
+      position:absolute;left:120px;top:155px;
+      background:var(--card-bg);backdrop-filter:blur(20px);
+      border:1px solid var(--card-border);border-radius:12px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.15),0 0 20px var(--primary-glow);
+      padding:6px;min-width:200px;z-index:10;
+    }
+    .autocomplete-title{font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 10px;text-transform:uppercase;letter-spacing:0.5px}
+    .autocomplete-item{
+      display:flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:8px;cursor:pointer;
+      transition:background 0.15s;
+    }
+    .autocomplete-item:hover,.autocomplete-item.active{background:var(--table-selected)}
+    .autocomplete-item .ac-name{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--primary);font-weight:600}
+    .autocomplete-item .ac-desc{font-size:11px;color:var(--text-muted);flex:1;text-align:right}
+
+    /* ═══════════════ Schema Table ═══════════════ */
+    .schema-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+    .schema-table th{padding:10px 14px;text-align:left;font-weight:600;font-size:12px;color:var(--primary);background:var(--badge-bg);backdrop-filter:blur(8px);border-bottom:1px solid var(--card-border)}
+    .schema-table th:first-child{border-radius:10px 0 0 0}
+    .schema-table th:last-child{border-radius:0 10px 0 0}
+    .schema-table td{padding:10px 14px;border-bottom:1px solid var(--editor-line);transition:background 0.2s}
+    .schema-table tr:hover td{background:var(--table-hover)}
+    .type-badge{font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:4px;background:var(--badge-bg);color:var(--primary)}
+
+    /* ═══════════════ Confirm Dialog ═══════════════ */
+    .confirm-icon{
+      width:52px;height:52px;border-radius:16px;
+      background:rgba(255,107,139,0.1);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:16px;
+    }
+    .confirm-icon svg{width:24px;height:24px;color:var(--accent)}
+    .confirm-text{font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:4px}
+
+    /* ═══════════════ Animations ═══════════════ */
+    @keyframes breathe{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    .design-section:nth-child(1){animation:fadeInUp 0.5s ease both 0.05s}
+    .design-section:nth-child(2){animation:fadeInUp 0.5s ease both 0.1s}
+    .design-section:nth-child(3){animation:fadeInUp 0.5s ease both 0.15s}
+    .design-section:nth-child(4){animation:fadeInUp 0.5s ease both 0.2s}
+    .design-section:nth-child(5){animation:fadeInUp 0.5s ease both 0.25s}
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  <canvas id="flow-canvas"></canvas>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <svg viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="28" height="28" rx="8" stroke="currentColor" stroke-width="2"/><path d="M10 16h12M16 10v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        HStack Mock · 编辑交互
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+    </div>
+    <div class="nav-hologram-line"></div>
+  </nav>
+
+  <div class="main">
+    <h1 class="page-title">编辑交互设计</h1>
+    <p class="page-desc">Mock 平台四种核心编辑场景的交互细节与视觉规范</p>
+
+    <!-- ═══════════════ 1. Project Dialog ═══════════════ -->
+    <div class="design-section">
+      <h2 class="section-label">1. 项目编辑 · 对话框</h2>
+      <p class="section-desc">创建 / 编辑项目时弹出对话框，含图标选择、名称、Slug、描述</p>
+      <div class="demo-row">
+        <div class="demo-card">
+          <div class="scan-edge"></div>
+          <h4>创建项目对话框</h4>
+          <button class="btn btn-primary btn-sm" onclick="openDialog('createProject')">打开创建对话框</button>
+        </div>
+        <div class="demo-card">
+          <div class="scan-edge"></div>
+          <h4>编辑项目对话框</h4>
+          <button class="btn btn-ghost btn-sm" onclick="openDialog('editProject')">打开编辑对话框</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ 2. Group Inline Edit ═══════════════ -->
+    <div class="design-section">
+      <h2 class="section-label">2. 分组编辑 · 左侧面板内联</h2>
+      <p class="section-desc">分组名称直接在左侧面板内联编辑，新增时直接出现输入框</p>
+      <div class="demo-row">
+        <!-- Default State -->
+        <div class="demo-card" style="max-width:320px">
+          <div class="scan-edge"></div>
+          <h4>默认状态</h4>
+          <div class="sidebar-demo">
+            <div class="group-item">
+              <div class="group-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+              <span class="group-name">Users</span>
+              <span class="group-count">6</span>
+              <button class="group-edit-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            </div>
+            <div class="group-item">
+              <div class="group-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+              <span class="group-name">Products</span>
+              <span class="group-count">5</span>
+              <button class="group-edit-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            </div>
+            <div class="add-group-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> 添加分组</div>
+          </div>
+        </div>
+
+        <!-- Editing State -->
+        <div class="demo-card" style="max-width:320px">
+          <div class="scan-edge"></div>
+          <h4>编辑中状态</h4>
+          <div class="sidebar-demo">
+            <div class="group-item editing">
+              <div class="group-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+              <input type="text" class="group-name-input" value="Users" />
+            </div>
+            <div class="group-item">
+              <div class="group-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+              <span class="group-name">Products</span>
+              <span class="group-count">5</span>
+            </div>
+            <div class="add-group-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> 添加分组</div>
+          </div>
+        </div>
+
+        <!-- Adding State -->
+        <div class="demo-card" style="max-width:320px">
+          <div class="scan-edge"></div>
+          <h4>新增分组状态</h4>
+          <div class="sidebar-demo">
+            <div class="group-item">
+              <div class="group-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+              <span class="group-name">Users</span>
+              <span class="group-count">6</span>
+            </div>
+            <div class="add-group-input-row">
+              <input type="text" class="add-group-input" placeholder="输入分组名称，回车确认" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ 3. Interface Form ═══════════════ -->
+    <div class="design-section">
+      <h2 class="section-label">3. 接口编辑 · 对话框</h2>
+      <p class="section-desc">新建 / 编辑接口时弹出对话框，包含 Method 选择、路径、分组、描述、Schema 和初始 Mock 响应</p>
+      <div class="demo-row">
+        <div class="demo-card">
+          <div class="scan-edge"></div>
+          <h4>新建接口</h4>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">空白表单，需手动填写所有字段</p>
+          <button class="btn btn-primary btn-sm" onclick="openDialog('createIface')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            新建接口
+          </button>
+        </div>
+        <div class="demo-card">
+          <div class="scan-edge"></div>
+          <h4>编辑接口</h4>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">预填当前接口数据，Method 和路径可修改</p>
+          <button class="btn btn-ghost btn-sm" onclick="openDialog('editIface')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            编辑接口
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ 4. Mock Response Editor ═══════════════ -->
+    <div class="design-section">
+      <h2 class="section-label">4. Mock 响应编辑 · Monaco Editor</h2>
+      <p class="section-desc">代码编辑器模式，含 Mock.js 自动补全、实时预览和"从 Schema 生成"功能</p>
+      <div class="demo-row">
+        <div class="demo-card" style="max-width:560px">
+          <div class="scan-edge"></div>
+          <h4>编辑器 + Mock.js 自动补全</h4>
+          <div class="editor-wrap">
+            <div class="editor-toolbar">
+              <div class="editor-dots"><span class="editor-dot"></span><span class="editor-dot"></span><span class="editor-dot"></span></div>
+              <button class="editor-toolbar-btn primary">✨ 从 Schema 生成</button>
+              <button class="editor-toolbar-btn">格式化</button>
+              <button class="editor-toolbar-btn">折叠</button>
+            </div>
+            <div class="editor-body" style="position:relative;min-height:180px">
+{
+  <span class="syn-key">"id"</span>: <span class="syn-mock">@g</span><span style="background:var(--table-selected);border-bottom:2px solid var(--primary);padding:0 1px">u</span>id,
+  <span class="syn-key">"name"</span>: <span class="syn-mock">@cname</span>,
+  <span class="syn-key">"email"</span>: <span class="syn-mock">@email</span>,
+  <span class="syn-key">"age"</span>: <span class="syn-mock">@integer(18, 60)</span>,
+  <span class="syn-key">"role"</span>: <span class="syn-mock">@pick(['admin','user'])</span>
+}</div>
+            <!-- Autocomplete Popup -->
+            <div class="autocomplete-popup">
+              <div class="autocomplete-title">Mock.js 占位符</div>
+              <div class="autocomplete-item active">
+                <span class="ac-name">@guid</span>
+                <span class="ac-desc">UUID</span>
+              </div>
+              <div class="autocomplete-item">
+                <span class="ac-name">@id</span>
+                <span class="ac-desc">自增 ID</span>
+              </div>
+              <div class="autocomplete-item">
+                <span class="ac-name">@integer</span>
+                <span class="ac-desc">随机整数</span>
+              </div>
+              <div class="autocomplete-item">
+                <span class="ac-name">@increment</span>
+                <span class="ac-desc">自增整数</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ 5. Delete Confirmation ═══════════════ -->
+    <div class="design-section">
+      <h2 class="section-label">5. 删除确认 · 确认对话框</h2>
+      <p class="section-desc">删除项目 / 分组 / 接口时的二次确认</p>
+      <div class="demo-row">
+        <div class="demo-card">
+          <div class="scan-edge"></div>
+          <h4>删除项目确认</h4>
+          <button class="btn btn-danger btn-sm" onclick="openDialog('deleteConfirm')">删除项目</button>
+        </div>
+        <div class="demo-card">
+          <div class="scan-edge"></div>
+          <h4>删除接口确认</h4>
+          <button class="btn btn-danger btn-sm" onclick="openDialog('deleteIface')">删除接口</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Create Project Dialog ═══════════════ -->
+  <div class="dialog-overlay" id="createProject">
+    <div class="dialog-box">
+      <div class="dialog-header-line"></div>
+      <div class="dialog-header">
+        <h3>创建 Mock 项目</h3>
+        <button class="dialog-close" onclick="closeDialog('createProject')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-group">
+          <label class="form-label">项目图标</label>
+          <div class="emoji-row">
+            <div class="emoji-option">🛒</div>
+            <div class="emoji-option">💬</div>
+            <div class="emoji-option">📊</div>
+            <div class="emoji-option selected">🚀</div>
+            <div class="emoji-option">📱</div>
+            <div class="emoji-option">🎮</div>
+            <div class="emoji-option">⚙️</div>
+            <div class="emoji-option">🎵</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">项目名称 <span class="required">*</span></label>
+            <input type="text" class="hstack-input" placeholder="输入项目名称" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">URL Slug <span class="required">*</span></label>
+            <input type="text" class="hstack-input mono" placeholder="auto-generated" />
+            <div class="form-hint">Mock 地址前缀：/mock/your-slug</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <textarea class="hstack-input" placeholder="简单描述项目用途..." rows="3"></textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeDialog('createProject')">取消</button>
+        <button class="btn btn-primary btn-sm">创建项目</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Edit Project Dialog ═══════════════ -->
+  <div class="dialog-overlay" id="editProject">
+    <div class="dialog-box">
+      <div class="dialog-header-line"></div>
+      <div class="dialog-header">
+        <h3>编辑项目</h3>
+        <button class="dialog-close" onclick="closeDialog('editProject')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-group">
+          <label class="form-label">项目图标</label>
+          <div class="emoji-row">
+            <div class="emoji-option selected">🛒</div>
+            <div class="emoji-option">💬</div>
+            <div class="emoji-option">📊</div>
+            <div class="emoji-option">🚀</div>
+            <div class="emoji-option">📱</div>
+            <div class="emoji-option">🎮</div>
+            <div class="emoji-option">⚙️</div>
+            <div class="emoji-option">🎵</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">项目名称 <span class="required">*</span></label>
+            <input type="text" class="hstack-input" value="E-Commerce API" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">URL Slug</label>
+            <input type="text" class="hstack-input mono" value="ecommerce" disabled style="opacity:0.6" />
+            <div class="form-hint">Slug 创建后不可修改</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <textarea class="hstack-input" rows="3">电商平台接口 Mock，包含用户、商品、订单、支付等模块的完整接口模拟</textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeDialog('editProject')">取消</button>
+        <button class="btn btn-primary btn-sm">保存修改</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Create Interface Dialog ═══════════════ -->
+  <div class="dialog-overlay" id="createIface">
+    <div class="dialog-box" style="max-width:600px">
+      <div class="dialog-header-line"></div>
+      <div class="dialog-header">
+        <h3>新建接口</h3>
+        <button class="dialog-close" onclick="closeDialog('createIface')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-group">
+          <label class="form-label">HTTP Method <span class="required">*</span></label>
+          <div class="method-select">
+            <button class="method-option get selected" onclick="selectMethod(this)">GET</button>
+            <button class="method-option post" onclick="selectMethod(this)">POST</button>
+            <button class="method-option put" onclick="selectMethod(this)">PUT</button>
+            <button class="method-option delete" onclick="selectMethod(this)">DELETE</button>
+            <button class="method-option" style="color:var(--method-patch)" onclick="selectMethodPatch(this)">PATCH</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:3">
+            <label class="form-label">路径 <span class="required">*</span></label>
+            <input type="text" class="hstack-input mono" placeholder="/users" />
+            <div class="form-hint">支持路径参数，如 /users/:id</div>
+          </div>
+          <div class="form-group" style="flex:2">
+            <label class="form-label">所属分组</label>
+            <select class="hstack-input" style="cursor:pointer">
+              <option value="">未分组</option>
+              <option>Users</option>
+              <option>Products</option>
+              <option>Orders</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <input type="text" class="hstack-input" placeholder="简要描述接口用途" />
+        </div>
+
+        <!-- Request Schema Section -->
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+            <span>请求参数</span>
+            <button class="btn btn-ghost btn-xs" style="font-size:10px" onclick="addSchemaRow('createSchema')">+ 添加参数</button>
+          </label>
+          <table class="schema-table" id="createSchema">
+            <thead><tr><th>参数名</th><th>位置</th><th>类型</th><th>必填</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><input type="text" class="hstack-input" placeholder="name" style="padding:6px 10px;font-size:12px" /></td>
+                <td><select class="hstack-input" style="padding:6px 10px;font-size:12px;cursor:pointer;min-width:80px"><option>query</option><option>path</option><option>header</option><option>body</option></select></td>
+                <td><select class="hstack-input" style="padding:6px 10px;font-size:12px;cursor:pointer;min-width:80px"><option>string</option><option>integer</option><option>number</option><option>boolean</option><option>array</option></select></td>
+                <td style="text-align:center"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer" /></td>
+                <td><button style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px" title="删除"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Initial Mock Response -->
+        <div class="form-group">
+          <label class="form-label">初始 Mock 响应</label>
+          <div class="editor-wrap" style="border-radius:10px">
+            <div class="editor-toolbar" style="padding:6px 10px">
+              <div class="editor-dots"><span class="editor-dot"></span><span class="editor-dot"></span><span class="editor-dot"></span></div>
+              <button class="editor-toolbar-btn primary" style="font-size:10px">✨ 从 Schema 生成</button>
+            </div>
+            <div class="editor-body" style="min-height:100px;font-size:12px;padding:12px">{
+  <span class="syn-key">"code"</span>: <span class="syn-num">200</span>,
+  <span class="syn-key">"message"</span>: <span class="syn-str">"success"</span>,
+  <span class="syn-key">"data"</span>: {}
+}</div>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeDialog('createIface')">取消</button>
+        <button class="btn btn-primary btn-sm">创建接口</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Edit Interface Dialog ═══════════════ -->
+  <div class="dialog-overlay" id="editIface">
+    <div class="dialog-box" style="max-width:600px">
+      <div class="dialog-header-line"></div>
+      <div class="dialog-header">
+        <h3>编辑接口</h3>
+        <button class="dialog-close" onclick="closeDialog('editIface')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-group">
+          <label class="form-label">HTTP Method <span class="required">*</span></label>
+          <div class="method-select">
+            <button class="method-option get selected" onclick="selectMethod(this)">GET</button>
+            <button class="method-option post" onclick="selectMethod(this)">POST</button>
+            <button class="method-option put" onclick="selectMethod(this)">PUT</button>
+            <button class="method-option delete" onclick="selectMethod(this)">DELETE</button>
+            <button class="method-option" style="color:var(--method-patch)" onclick="selectMethodPatch(this)">PATCH</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:3">
+            <label class="form-label">路径 <span class="required">*</span></label>
+            <input type="text" class="hstack-input mono" value="/users/:id" />
+            <div class="form-hint">支持路径参数，如 /users/:id</div>
+          </div>
+          <div class="form-group" style="flex:2">
+            <label class="form-label">所属分组</label>
+            <select class="hstack-input" style="cursor:pointer">
+              <option value="">未分组</option>
+              <option selected>Users</option>
+              <option>Products</option>
+              <option>Orders</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <input type="text" class="hstack-input" value="根据 ID 获取用户详情" />
+        </div>
+
+        <!-- Request Schema Section (pre-filled) -->
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+            <span>请求参数</span>
+            <button class="btn btn-ghost btn-xs" style="font-size:10px" onclick="addSchemaRow('editSchema')">+ 添加参数</button>
+          </label>
+          <table class="schema-table" id="editSchema">
+            <thead><tr><th>参数名</th><th>位置</th><th>类型</th><th>必填</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><input type="text" class="hstack-input" value="id" style="padding:6px 10px;font-size:12px" /></td>
+                <td><select class="hstack-input" style="padding:6px 10px;font-size:12px;cursor:pointer;min-width:80px"><option selected>path</option><option>query</option><option>header</option><option>body</option></select></td>
+                <td><select class="hstack-input" style="padding:6px 10px;font-size:12px;cursor:pointer;min-width:80px"><option selected>string</option><option>integer</option><option>number</option><option>boolean</option><option>array</option></select></td>
+                <td style="text-align:center"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer" /></td>
+                <td><button style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px" title="删除"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>
+              </tr>
+              <tr>
+                <td><input type="text" class="hstack-input" value="fields" style="padding:6px 10px;font-size:12px" /></td>
+                <td><select class="hstack-input" style="padding:6px 10px;font-size:12px;cursor:pointer;min-width:80px"><option>path</option><option selected>query</option><option>header</option><option>body</option></select></td>
+                <td><select class="hstack-input" style="padding:6px 10px;font-size:12px;cursor:pointer;min-width:80px"><option selected>string</option><option>integer</option><option>number</option><option>boolean</option><option>array</option></select></td>
+                <td style="text-align:center"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer" /></td>
+                <td><button style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px" title="删除"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mock Response (pre-filled with Mock.js) -->
+        <div class="form-group">
+          <label class="form-label">Mock 响应</label>
+          <div class="editor-wrap" style="border-radius:10px">
+            <div class="editor-toolbar" style="padding:6px 10px">
+              <div class="editor-dots"><span class="editor-dot"></span><span class="editor-dot"></span><span class="editor-dot"></span></div>
+              <button class="editor-toolbar-btn primary" style="font-size:10px">✨ 从 Schema 生成</button>
+              <button class="editor-toolbar-btn" style="font-size:10px">格式化</button>
+            </div>
+            <div class="editor-body" style="min-height:100px;font-size:12px;padding:12px">{
+  <span class="syn-key">"code"</span>: <span class="syn-num">200</span>,
+  <span class="syn-key">"data"</span>: {
+    <span class="syn-key">"id"</span>: <span class="syn-mock">@guid</span>,
+    <span class="syn-key">"name"</span>: <span class="syn-mock">@cname</span>,
+    <span class="syn-key">"email"</span>: <span class="syn-mock">@email</span>,
+    <span class="syn-key">"role"</span>: <span class="syn-mock">@pick(['admin','user'])</span>
+  }
+}</div>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeDialog('editIface')">取消</button>
+        <button class="btn btn-primary btn-sm">保存修改</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Delete Confirm Dialog ═══════════════ -->
+  <div class="dialog-overlay" id="deleteConfirm">
+    <div class="dialog-box" style="max-width:420px">
+      <div class="dialog-header-line" style="background:linear-gradient(90deg,var(--accent),#ff4060)"></div>
+      <div class="dialog-header">
+        <h3>删除项目</h3>
+        <button class="dialog-close" onclick="closeDialog('deleteConfirm')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="dialog-body">
+        <div class="confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <p class="confirm-text">确定删除项目 <strong style="color:var(--text)">E-Commerce API</strong> 吗？</p>
+        <p class="confirm-text" style="font-size:12px;color:var(--text-muted)">此操作将同时删除旗下 4 个分组、24 个接口及其所有 Mock 响应，且不可恢复。</p>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeDialog('deleteConfirm')">取消</button>
+        <button class="btn btn-danger btn-sm">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Interface Confirm -->
+  <div class="dialog-overlay" id="deleteIface">
+    <div class="dialog-box" style="max-width:420px">
+      <div class="dialog-header-line" style="background:linear-gradient(90deg,var(--accent),#ff4060)"></div>
+      <div class="dialog-header">
+        <h3>删除接口</h3>
+        <button class="dialog-close" onclick="closeDialog('deleteIface')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="dialog-body">
+        <div class="confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <p class="confirm-text">确定删除接口 <strong style="color:var(--text)"><span class="method-tag get" style="font-size:9px">GET</span> /users/:id</strong> 吗？</p>
+        <p class="confirm-text" style="font-size:12px;color:var(--text-muted)">此操作将同时删除该接口的 Mock 响应配置，且不可恢复。</p>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeDialog('deleteIface')">取消</button>
+        <button class="btn btn-danger btn-sm">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme(){
+      const h=document.documentElement,c=h.getAttribute('data-theme');
+      h.setAttribute('data-theme',c==='light'?'dark':'light');
+      const s=document.querySelector('.theme-toggle svg');
+      s.innerHTML=h.getAttribute('data-theme')==='dark'?'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>':'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    }
+    function openDialog(id){document.getElementById(id).classList.add('open')}
+    function closeDialog(id){document.getElementById(id).classList.remove('open')}
+    document.querySelectorAll('.dialog-overlay').forEach(d=>{
+      d.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')});
+    });
+
+    // Emoji picker
+    document.querySelectorAll('.emoji-option').forEach(el=>{
+      el.addEventListener('click',function(){
+        this.closest('.emoji-row').querySelectorAll('.emoji-option').forEach(e=>e.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+
+    // Method select
+    function selectMethod(el){
+      el.closest('.method-select').querySelectorAll('.method-option').forEach(e=>{e.classList.remove('selected');e.style.background='';e.style.color=''});
+      el.classList.add('selected');
+    }
+    function selectMethodPatch(el){
+      el.closest('.method-select').querySelectorAll('.method-option').forEach(e=>{e.classList.remove('selected');e.style.background='';e.style.color=''});
+      el.classList.add('selected');
+      el.style.background='var(--method-patch)';el.style.color='#fff';
+    }
+    // Add schema row
+    function addSchemaRow(tableId){
+      const tbody=document.getElementById(tableId).querySelector('tbody');
+      const row=document.createElement('tr');
+      row.innerHTML=`<td><input type="text" class="hstack-input" placeholder="name" style="padding:6px 10px;font-size:12px" /></td><td><select class="hstack-input" style="padding:6px 10px;font-size:12px;cursor:pointer;min-width:80px"><option>query</option><option>path</option><option>header</option><option>body</option></select></td><td><select class="hstack-input" style="padding:6px 10px;font-size:12px;cursor:pointer;min-width:80px"><option>string</option><option>integer</option><option>number</option><option>boolean</option><option>array</option></select></td><td style="text-align:center"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer" /></td><td><button style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px" title="删除" onclick="this.closest('tr').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>`;
+      tbody.appendChild(row);
+    }
+    // Init method select for static demo cards
+    document.querySelectorAll('.method-select:not(#createIface .method-select):not(#editIface .method-select) .method-option').forEach(el=>{
+      el.addEventListener('click',function(){
+        this.closest('.method-select').querySelectorAll('.method-option').forEach(e=>e.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+
+    // Autocomplete item
+    document.querySelectorAll('.autocomplete-item').forEach(el=>{
+      el.addEventListener('click',function(){
+        document.querySelectorAll('.autocomplete-item').forEach(i=>i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Particle System
+    const pc=document.getElementById('particle-canvas'),pctx=pc.getContext('2d');
+    const fc=document.getElementById('flow-canvas'),fctx=fc.getContext('2d');
+    function resizeCanvases(){pc.width=fc.width=window.innerWidth;pc.height=fc.height=window.innerHeight}
+    resizeCanvases();window.addEventListener('resize',resizeCanvases);
+
+    const particles=[];
+    for(let i=0;i<50;i++){
+      particles.push({x:Math.random()*pc.width,y:Math.random()*pc.height,size:1.5+Math.random()*2,speedX:(Math.random()-0.5)*0.3,speedY:(Math.random()-0.5)*0.3,hue:[250,190,340][Math.floor(Math.random()*3)],phase:Math.random()*Math.PI*2,breathSpeed:0.01+Math.random()*0.02});
+    }
+    let mouseX=-1000,mouseY=-1000;
+    document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
+
+    function animateParticles(){
+      pctx.clearRect(0,0,pc.width,pc.height);
+      const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+      particles.forEach(p=>{
+        p.phase+=p.breathSpeed;
+        const alpha=(isDark?0.6:0.3)*(0.5+0.5*Math.sin(p.phase));
+        const dx=p.x-mouseX,dy=p.y-mouseY,dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<150){p.x+=dx*0.003;p.y+=dy*0.003}
+        p.x+=p.speedX;p.y+=p.speedY;
+        if(p.x<0)p.x=pc.width;if(p.x>pc.width)p.x=0;
+        if(p.y<0)p.y=pc.height;if(p.y>pc.height)p.y=0;
+        pctx.beginPath();pctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+        pctx.fillStyle=`hsla(${p.hue},${isDark?'80%':'70%'},${isDark?'70%':'55%'},${alpha})`;
+        pctx.fill();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    const flowLines=[];
+    for(let i=0;i<4;i++){
+      const pts=[];const n=6+Math.floor(Math.random()*4);
+      for(let j=0;j<n;j++)pts.push({x:Math.random()*fc.width,y:Math.random()*fc.height});
+      flowLines.push({points:pts,progress:Math.random(),speed:0.0003+Math.random()*0.0005,hue:Math.random()<0.6?250:190,width:1+Math.random()*2});
+    }
+    function animateFlows(){
+      fctx.clearRect(0,0,fc.width,fc.height);
+      const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+      flowLines.forEach(fl=>{
+        fl.progress+=fl.speed;if(fl.progress>1)fl.progress=0;
+        const idx=fl.progress*(fl.points.length-1),i=Math.floor(idx),t=idx-i;
+        const p1=fl.points[Math.min(i,fl.points.length-1)],p2=fl.points[Math.min(i+1,fl.points.length-1)];
+        const gx=p1.x+(p2.x-p1.x)*t,gy=p1.y+(p2.y-p1.y)*t;
+        fctx.beginPath();fctx.moveTo(fl.points[0].x,fl.points[0].y);
+        for(let k=1;k<fl.points.length;k++)fctx.lineTo(fl.points[k].x,fl.points[k].y);
+        fctx.strokeStyle=`hsla(${fl.hue},70%,60%,${isDark?0.08:0.04})`;fctx.lineWidth=fl.width;fctx.stroke();
+        const grad=fctx.createRadialGradient(gx,gy,0,gx,gy,20);
+        grad.addColorStop(0,`hsla(${fl.hue},70%,60%,${isDark?0.5:0.25})`);
+        grad.addColorStop(1,`hsla(${fl.hue},70%,60%,0)`);
+        fctx.beginPath();fctx.arc(gx,gy,20,0,Math.PI*2);fctx.fillStyle=grad;fctx.fill();
+      });
+      requestAnimationFrame(animateFlows);
+    }
+    animateFlows();
+  </script>
+</body>
+</html>

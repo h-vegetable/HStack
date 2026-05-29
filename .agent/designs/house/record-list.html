@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>看房日志 · 记录列表</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════ Theme Variables ═══════════════ */
+    [data-theme='light'] {
+      --bg-start: #f5f3ff; --bg-end: #edf2ff;
+      --card-bg: rgba(255,255,255,0.55); --card-border: rgba(93,95,239,0.12);
+      --card-shadow: 0 8px 32px rgba(93,95,239,0.1), 0 0 60px rgba(93,95,239,0.05);
+      --primary: #5d5fef; --primary-glow: rgba(93,95,239,0.35);
+      --secondary: #00d2ff; --accent: #ff7a9e;
+      --text: #1e1e2f; --text-secondary: #4a4a6a; --text-muted: #8e8ea0;
+      --input-bg: rgba(255,255,255,0.5); --input-border: rgba(93,95,239,0.25);
+      --nav-bg: rgba(245,243,255,0.72);
+      --scan-color: rgba(93,95,239,0.5); --scan-glow: rgba(93,95,239,0.15);
+      --particle-alpha: 0.3; --flow-alpha: 0.06;
+      --table-hover: rgba(93,95,239,0.06); --table-selected: rgba(93,95,239,0.12);
+      --overlay: rgba(237,242,255,0.6); --badge-bg: rgba(93,95,239,0.08);
+      --status-interested: #49cc90; --status-pending: #fca130; --status-eliminated: #8e8ea0;
+      --map-placeholder: #e8e4f8;
+    }
+    [data-theme='dark'] {
+      --bg-start: #0f0a1e; --bg-end: #1a1035;
+      --card-bg: rgba(30,22,60,0.6); --card-border: rgba(133,130,255,0.18);
+      --card-shadow: 0 8px 32px rgba(133,130,255,0.12), 0 0 60px rgba(58,224,217,0.06);
+      --primary: #8582ff; --primary-glow: rgba(133,130,255,0.4);
+      --secondary: #3ae0d9; --accent: #ff6b8b;
+      --text: #ede9ff; --text-secondary: #b8b0d4; --text-muted: #7a7294;
+      --input-bg: rgba(30,22,60,0.4); --input-border: rgba(133,130,255,0.3);
+      --nav-bg: rgba(15,10,30,0.78);
+      --scan-color: rgba(133,130,255,0.7); --scan-glow: rgba(58,224,217,0.2);
+      --particle-alpha: 0.6; --flow-alpha: 0.1;
+      --table-hover: rgba(58,224,217,0.06); --table-selected: rgba(133,130,255,0.15);
+      --overlay: rgba(15,10,30,0.7); --badge-bg: rgba(133,130,255,0.12);
+      --status-interested: #49cc90; --status-pending: #fca130; --status-eliminated: #7a7294;
+      --map-placeholder: #16213e;
+    }
+
+    /* ═══════════════ Reset & Base ═══════════════ */
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      font-family:'Quicksand',system-ui,sans-serif;
+      background:linear-gradient(135deg,var(--bg-start),var(--bg-end));
+      color:var(--text); min-height:100vh; overflow-x:hidden;
+      transition:background 0.6s ease, color 0.4s ease;
+    }
+    h1,h2,h3,h4 { font-family:'Rajdhani','Quicksand',sans-serif; font-weight:700; letter-spacing:0.02em; }
+    a { color:var(--primary); text-decoration:none; }
+
+    /* ═══════════════ Canvas Layers ═══════════════ */
+    #particle-canvas,#flow-canvas {
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      pointer-events:none; z-index:0;
+    }
+
+    /* ═══════════════ Navigation ═══════════════ */
+    .nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      background:var(--nav-bg); backdrop-filter:blur(20px) saturate(1.4);
+      -webkit-backdrop-filter:blur(20px) saturate(1.4);
+      border-bottom:1px solid var(--card-border); transition:background 0.4s;
+    }
+    .nav-inner {
+      max-width:1280px; margin:0 auto; padding:0 32px;
+      height:64px; display:flex; align-items:center; justify-content:space-between;
+    }
+    .nav-logo {
+      display:flex; align-items:center; gap:10px;
+      font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; color:var(--primary);
+    }
+    .nav-logo svg { width:32px; height:32px; }
+    .nav-breadcrumb { display:flex; align-items:center; gap:8px; font-size:14px; color:var(--text-secondary); }
+    .nav-breadcrumb .sep { color:var(--text-muted); }
+    .nav-breadcrumb .current { color:var(--primary); font-weight:600; }
+    .nav-right { display:flex; align-items:center; gap:12px; }
+    .nav-hologram-line {
+      position:absolute; bottom:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent 0%,var(--primary) 30%,var(--secondary) 70%,transparent 100%);
+      opacity:0.5; animation:holoLine 4s ease-in-out infinite;
+    }
+    @keyframes holoLine {
+      0%,100% { opacity:0.3; transform:scaleX(0.8); }
+      50% { opacity:0.7; transform:scaleX(1); }
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      width:48px; height:48px; border-radius:14px;
+      border:1.5px solid var(--input-border); background:var(--input-bg);
+      cursor:pointer; backdrop-filter:blur(8px);
+      transition:all 0.3s ease; display:flex; align-items:center; justify-content:center;
+    }
+    .theme-toggle:hover { border-color:var(--primary); box-shadow:0 0 12px var(--primary-glow); }
+    .theme-toggle svg { width:18px; height:18px; color:var(--primary); transition:transform 0.4s cubic-bezier(0.68,-0.55,0.27,1.55); }
+    .theme-toggle:hover svg { transform:rotate(180deg); }
+
+    /* ═══════════════ Main Content ═══════════════ */
+    .main {
+      position:relative; z-index:1;
+      padding:96px 32px 48px;
+      max-width:1280px; margin:0 auto;
+    }
+
+    /* ═══════════════ Page Header ═══════════════ */
+    .page-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:28px; gap:16px; flex-wrap:wrap;
+      animation:fadeInUp 0.6s ease both;
+    }
+    .page-header-left h1 {
+      font-size:clamp(28px,4vw,36px); margin-bottom:4px;
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .page-header-left p { font-size:15px; color:var(--text-secondary); }
+
+    /* ═══════════════ Buttons ═══════════════ */
+    .btn {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:12px 28px; border-radius:14px;
+      font-family:'Quicksand',sans-serif; font-size:15px; font-weight:600;
+      cursor:pointer; border:none; position:relative; overflow:hidden;
+      transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn:active { transform:scale(0.96); }
+    .btn-primary {
+      background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary),var(--secondary) 30%));
+      color:#fff; box-shadow:0 4px 20px var(--primary-glow);
+    }
+    .btn-primary::before {
+      content:''; position:absolute; top:-50%; left:-60%; width:40%; height:200%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);
+      transform:skewX(-20deg); transition:left 0.6s ease;
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 32px var(--primary-glow); }
+    .btn-primary:hover::before { left:120%; }
+    .btn-ghost {
+      background:transparent; border:1.5px solid var(--input-border);
+      color:var(--primary); backdrop-filter:blur(8px);
+    }
+    .btn-ghost:hover { background:var(--badge-bg); border-color:var(--primary); box-shadow:0 0 16px var(--primary-glow); }
+    .btn-sm { padding:8px 18px; font-size:13px; border-radius:10px; }
+    .btn-icon {
+      width:40px; height:40px; padding:0; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--badge-bg); border:1.5px solid var(--card-border);
+      cursor:pointer; color:var(--text-secondary);
+      transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn-icon:hover { border-color:var(--primary); color:var(--primary); box-shadow:0 0 12px var(--primary-glow); }
+
+    /* ═══════════════ Filter Bar ═══════════════ */
+    .filter-bar {
+      display:flex; align-items:center; gap:10px; margin-bottom:24px;
+      flex-wrap:wrap; animation:fadeInUp 0.6s ease both 0.1s;
+    }
+    .filter-chip {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:8px 18px; border-radius:12px;
+      font-size:13px; font-weight:600; cursor:pointer;
+      border:1.5px solid var(--card-border); background:var(--card-bg);
+      backdrop-filter:blur(8px); color:var(--text-secondary);
+      transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .filter-chip:hover { border-color:var(--primary); color:var(--primary); }
+    .filter-chip.active {
+      border-color:var(--primary); background:var(--badge-bg);
+      color:var(--primary); box-shadow:0 0 12px var(--primary-glow);
+    }
+    .filter-chip .count {
+      background:var(--badge-bg); padding:1px 7px; border-radius:6px;
+      font-size:11px; font-weight:700;
+    }
+    .filter-chip.active .count { background:rgba(93,95,239,0.15); }
+    .filter-divider { width:1px; height:24px; background:var(--card-border); margin:0 4px; }
+    .sort-select {
+      padding:8px 14px; border-radius:12px;
+      border:1.5px solid var(--card-border); background:var(--card-bg);
+      backdrop-filter:blur(8px); font-family:'Quicksand',sans-serif;
+      font-size:13px; font-weight:500; color:var(--text-secondary);
+      cursor:pointer; outline:none; transition:all 0.3s ease;
+    }
+    .sort-select:focus { border-color:var(--primary); }
+
+    /* ═══════════════ Record Cards Grid ═══════════════ */
+    .record-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+      gap:24px;
+    }
+
+    .record-card {
+      background:var(--card-bg); backdrop-filter:blur(16px) saturate(1.2);
+      -webkit-backdrop-filter:blur(16px) saturate(1.2);
+      border:1px solid var(--card-border); border-radius:20px;
+      overflow:hidden; position:relative; cursor:pointer;
+      box-shadow:var(--card-shadow);
+      transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .record-card:hover {
+      transform:translateY(-6px);
+      box-shadow:0 16px 48px var(--primary-glow),var(--card-shadow);
+    }
+    .record-card .scan-edge {
+      position:absolute; inset:0; border-radius:20px; pointer-events:none; z-index:2;
+      background:conic-gradient(from var(--scan-angle,0deg),transparent 0%,var(--scan-color) 8%,transparent 16%);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+      mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor; mask-composite:exclude;
+      padding:1.5px; animation:scanEdge 5s linear infinite;
+    }
+    @property --scan-angle { syntax:'<angle>'; initial-value:0deg; inherits:false; }
+    @keyframes scanEdge { to { --scan-angle:360deg; } }
+
+    /* Card Cover */
+    .record-card-cover {
+      width:100%; height:180px; position:relative; overflow:hidden;
+    }
+    .record-card-cover img {
+      width:100%; height:100%; object-fit:cover;
+      transition:transform 0.5s ease;
+    }
+    .record-card:hover .record-card-cover img { transform:scale(1.05); }
+    .record-card-cover .cover-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,0.5) 100%);
+    }
+    .record-card-cover .status-badge {
+      position:absolute; top:14px; right:14px; z-index:3;
+      display:inline-flex; align-items:center; gap:6px;
+      padding:5px 14px; border-radius:20px; font-size:11px; font-weight:700;
+      backdrop-filter:blur(12px); letter-spacing:0.03em;
+    }
+    .status-badge.interested {
+      background:rgba(73,204,144,0.15); color:var(--status-interested);
+      border:1px solid rgba(73,204,144,0.3);
+    }
+    .status-badge.pending {
+      background:rgba(252,161,48,0.15); color:var(--status-pending);
+      border:1px solid rgba(252,161,48,0.3);
+    }
+    .status-badge.eliminated {
+      background:rgba(142,142,160,0.15); color:var(--status-eliminated);
+      border:1px solid rgba(142,142,160,0.3);
+    }
+    .status-badge .dot {
+      width:6px; height:6px; border-radius:50%;
+    }
+    .status-badge.interested .dot { background:var(--status-interested); animation:breathe 2s ease-in-out infinite; }
+    .status-badge.pending .dot { background:var(--status-pending); animation:breathe 2.5s ease-in-out infinite; }
+    .status-badge.eliminated .dot { background:var(--status-eliminated); }
+
+    /* Card Body */
+    .record-card-body { padding:20px 24px 22px; }
+    .record-card-body h3 {
+      font-size:18px; margin-bottom:4px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .record-card-body .community {
+      font-size:13px; color:var(--text-secondary); margin-bottom:14px;
+      display:flex; align-items:center; gap:5px;
+    }
+    .record-card-body .community svg { width:13px; height:13px; opacity:0.5; }
+
+    /* Info Grid */
+    .record-info-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:8px 16px;
+      margin-bottom:14px;
+    }
+    .info-item {
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .info-item .info-label {
+      font-size:11px; color:var(--text-muted); font-weight:500;
+      text-transform:uppercase; letter-spacing:0.05em;
+    }
+    .info-item .info-value {
+      font-size:14px; font-weight:600; color:var(--text);
+    }
+    .info-item .info-value.price {
+      color:var(--secondary); font-family:'Rajdhani',sans-serif; font-size:17px;
+    }
+    .info-item .info-value .unit {
+      font-size:11px; font-weight:400; color:var(--text-muted); margin-left:2px;
+    }
+
+    /* Tags */
+    .record-tags {
+      display:flex; flex-wrap:wrap; gap:6px;
+      padding-top:14px; border-top:1px solid var(--card-border);
+    }
+    .tag {
+      display:inline-flex; align-items:center;
+      padding:3px 10px; border-radius:8px;
+      font-size:11px; font-weight:600;
+      background:var(--badge-bg); color:var(--primary);
+    }
+    .tag.commute {
+      background:rgba(0,210,255,0.08); color:var(--secondary);
+    }
+
+    /* Star inline */
+    .stars { display:inline-flex; gap:1px; }
+    .stars .star { color:var(--accent); font-size:11px; }
+    .stars .star.empty { opacity:0.25; }
+
+    /* ═══════════════ Drawer ═══════════════ */
+    .drawer-overlay {
+      position:fixed; inset:0; z-index:200;
+      background:var(--overlay); backdrop-filter:blur(12px);
+      opacity:0; pointer-events:none; transition:opacity 0.35s ease;
+    }
+    .drawer-overlay.open { opacity:1; pointer-events:auto; }
+    .drawer-panel {
+      position:fixed; top:0; right:0; bottom:0;
+      width:460px; max-width:92vw; z-index:201;
+      background:var(--card-bg); backdrop-filter:blur(24px);
+      border-left:1px solid var(--card-border);
+      box-shadow:-16px 0 48px rgba(0,0,0,0.15),0 0 60px var(--primary-glow);
+      transform:translateX(100%); transition:transform 0.45s cubic-bezier(0.34,1.56,0.64,1);
+      overflow-y:auto;
+    }
+    .drawer-overlay.open .drawer-panel { transform:translateX(0); }
+    .drawer-light-bar {
+      position:absolute; top:0; left:0; bottom:0; width:3px;
+      background:linear-gradient(180deg,var(--primary),var(--secondary),var(--accent));
+      animation:lightDescend 2s ease-in-out infinite;
+    }
+    @keyframes lightDescend {
+      0%,100% { opacity:0.3; } 50% { opacity:1; }
+    }
+
+    .drawer-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:24px 24px 0;
+    }
+    .drawer-header h3 { font-size:20px; }
+    .drawer-close {
+      width:32px; height:32px; border-radius:50%;
+      border:1.5px solid var(--input-border); background:transparent;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:all 0.3s ease; color:var(--text-muted);
+    }
+    .drawer-close:hover { border-color:var(--primary); color:var(--primary); box-shadow:0 0 12px var(--primary-glow); transform:rotate(90deg); }
+
+    /* Steps */
+    .steps-bar {
+      display:flex; align-items:center; gap:0; padding:20px 24px 0;
+    }
+    .step-item {
+      display:flex; align-items:center; gap:8px; flex:1;
+    }
+    .step-dot {
+      width:28px; height:28px; border-radius:50%;
+      border:2px solid var(--card-border); background:transparent;
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:700; color:var(--text-muted);
+      transition:all 0.3s ease;
+    }
+    .step-item.active .step-dot {
+      border-color:var(--primary); background:var(--primary);
+      color:#fff; box-shadow:0 0 16px var(--primary-glow);
+    }
+    .step-item.completed .step-dot {
+      border-color:var(--secondary); background:var(--secondary); color:#fff;
+    }
+    .step-label { font-size:12px; font-weight:600; color:var(--text-muted); white-space:nowrap; }
+    .step-item.active .step-label { color:var(--primary); }
+    .step-item.completed .step-label { color:var(--secondary); }
+    .step-line { flex:1; height:2px; background:var(--card-border); margin:0 6px; }
+    .step-line.done { background:var(--secondary); }
+
+    .drawer-body { padding:24px; }
+
+    /* Form */
+    .form-group { margin-bottom:18px; }
+    .form-label { display:block; font-size:13px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; }
+    .form-label .required { color:var(--accent); margin-left:2px; }
+    .hstack-input {
+      width:100%; padding:12px 16px; border-radius:12px;
+      border:1.5px solid var(--input-border); background:var(--input-bg);
+      backdrop-filter:blur(8px); font-family:'Quicksand',sans-serif;
+      font-size:14px; color:var(--text); outline:none; transition:all 0.3s ease;
+    }
+    .hstack-input::placeholder { color:var(--text-muted); font-size:13px; font-weight:300; }
+    .hstack-input:focus { border-image:linear-gradient(135deg,var(--primary),var(--secondary)) 1; border-image-slice:1; box-shadow:0 0 16px var(--primary-glow),inset 0 0 8px var(--scan-glow); }
+    .form-hint { font-size:11px; color:var(--text-muted); margin-top:4px; }
+    .form-row { display:flex; gap:12px; }
+    .form-row .form-group { flex:1; }
+
+    /* Photo Upload Zone */
+    .photo-upload-zone {
+      border:2px dashed var(--input-border); border-radius:16px;
+      padding:32px; text-align:center; cursor:pointer;
+      background:var(--badge-bg); transition:all 0.3s ease;
+    }
+    .photo-upload-zone:hover { border-color:var(--primary); background:rgba(93,95,239,0.06); }
+    .photo-upload-zone svg { width:36px; height:36px; color:var(--text-muted); margin-bottom:8px; }
+    .photo-upload-zone p { font-size:14px; color:var(--text-secondary); }
+    .photo-upload-zone span { font-size:12px; color:var(--text-muted); }
+
+    /* Star Rating Input */
+    .star-rating-input { display:flex; gap:6px; }
+    .star-btn {
+      width:36px; height:36px; border-radius:10px; border:1.5px solid var(--card-border);
+      background:var(--badge-bg); display:flex; align-items:center; justify-content:center;
+      font-size:18px; cursor:pointer; transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .star-btn:hover { transform:scale(1.15); border-color:var(--accent); }
+    .star-btn.filled { background:rgba(255,122,158,0.12); border-color:var(--accent); color:var(--accent); }
+
+    /* Tag Input */
+    .tag-input-area {
+      display:flex; flex-wrap:wrap; gap:6px; padding:10px 12px;
+      border:1.5px solid var(--input-border); border-radius:12px;
+      background:var(--input-bg); backdrop-filter:blur(8px); min-height:44px;
+      align-items:center; cursor:text; transition:all 0.3s ease;
+    }
+    .tag-input-area:focus-within { border-image:linear-gradient(135deg,var(--primary),var(--secondary)) 1; border-image-slice:1; box-shadow:0 0 16px var(--primary-glow); }
+    .tag-chip {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:3px 10px; border-radius:8px;
+      font-size:12px; font-weight:600;
+      background:var(--badge-bg); color:var(--primary);
+    }
+    .tag-chip .remove { cursor:pointer; opacity:0.5; font-size:14px; line-height:1; }
+    .tag-chip .remove:hover { opacity:1; }
+    .tag-input-field {
+      border:none; outline:none; background:transparent;
+      font-family:'Quicksand',sans-serif; font-size:13px; color:var(--text);
+      flex:1; min-width:80px;
+    }
+    .tag-input-field::placeholder { color:var(--text-muted); font-weight:300; }
+
+    /* Template Selector */
+    .template-selector {
+      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;
+    }
+    .template-chip {
+      padding:8px 16px; border-radius:12px;
+      border:1.5px solid var(--card-border); background:var(--badge-bg);
+      font-size:13px; font-weight:600; color:var(--text-secondary);
+      cursor:pointer; transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .template-chip:hover { border-color:var(--primary); color:var(--primary); }
+    .template-chip.selected { border-color:var(--primary); background:var(--badge-bg); color:var(--primary); box-shadow:0 0 12px var(--primary-glow); }
+
+    .drawer-footer {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:16px 24px 24px; border-top:1px solid var(--card-border);
+    }
+
+    /* ═══════════════ Animations ═══════════════ */
+    @keyframes breathe {
+      0%,100% { opacity:0.6; transform:scale(1); }
+      50% { opacity:1; transform:scale(1.15); }
+    }
+    @keyframes fadeInUp {
+      from { opacity:0; transform:translateY(24px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .record-card:nth-child(1) { animation:fadeInUp 0.5s ease both 0.05s; }
+    .record-card:nth-child(2) { animation:fadeInUp 0.5s ease both 0.1s; }
+    .record-card:nth-child(3) { animation:fadeInUp 0.5s ease both 0.15s; }
+    .record-card:nth-child(4) { animation:fadeInUp 0.5s ease both 0.2s; }
+    .record-card:nth-child(5) { animation:fadeInUp 0.5s ease both 0.25s; }
+    .record-card:nth-child(6) { animation:fadeInUp 0.5s ease both 0.3s; }
+
+    /* Map Placeholder for drawer */
+    .mini-map-placeholder {
+      width:100%; height:160px; border-radius:14px;
+      background:var(--map-placeholder); border:1.5px solid var(--card-border);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--text-muted); font-size:13px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  <canvas id="flow-canvas"></canvas>
+
+  <!-- ═══════════════ Navigation ═══════════════ -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <svg viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="28" height="28" rx="8" stroke="currentColor" stroke-width="2"/><path d="M10 16h12M16 10v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        HStack
+        <span style="color:var(--text-muted);font-weight:400;font-size:14px;margin-left:4px">/ 看房日志</span>
+      </div>
+      <div class="nav-right">
+        <button class="btn-icon" title="通勤对比" onclick="location.href='compare.html'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </button>
+        <button class="btn-icon" title="通勤模板">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="nav-hologram-line"></div>
+  </nav>
+
+  <!-- ═══════════════ Main Content ═══════════════ -->
+  <div class="main">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>看房日志</h1>
+        <p>记录每次看房，对比通勤，找到最合适的家</p>
+      </div>
+      <button class="btn btn-primary" onclick="openDrawer()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        新建记录
+      </button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-chip active" onclick="selectFilter(this)">全部 <span class="count">6</span></div>
+      <div class="filter-chip" onclick="selectFilter(this)">感兴趣 <span class="count">2</span></div>
+      <div class="filter-chip" onclick="selectFilter(this)">待定 <span class="count">3</span></div>
+      <div class="filter-chip" onclick="selectFilter(this)">已淘汰 <span class="count">1</span></div>
+      <div class="filter-divider"></div>
+      <select class="sort-select">
+        <option>按看房时间</option>
+        <option>按价格</option>
+        <option>按面积</option>
+        <option>按单价</option>
+      </select>
+    </div>
+
+    <!-- ═══════════════ Record Cards Grid ═══════════════ -->
+    <div class="record-grid">
+
+      <!-- Record Card 1 — 感兴趣 -->
+      <div class="record-card" onclick="location.href='record-detail.html'">
+        <div class="scan-edge"></div>
+        <div class="record-card-cover">
+          <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=300&fit=crop" alt="翠苑一区" />
+          <div class="cover-overlay"></div>
+          <div class="status-badge interested"><span class="dot"></span> 感兴趣</div>
+        </div>
+        <div class="record-card-body">
+          <h3>翠苑一区 · 3室1厅1卫</h3>
+          <div class="community">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            杭州市西湖区翠苑街道
+          </div>
+          <div class="record-info-grid">
+            <div class="info-item">
+              <span class="info-label">面积</span>
+              <span class="info-value">89<span class="unit">㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">价格</span>
+              <span class="info-value price">320<span class="unit">万</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">单价</span>
+              <span class="info-value price">35,955<span class="unit">元/㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">看房</span>
+              <span class="info-value" style="font-size:13px;">05-28</span>
+            </div>
+          </div>
+          <div class="record-tags">
+            <span class="tag commute">🚗 公司 32min</span>
+            <span class="tag commute">🚇 健身房 15min</span>
+            <span class="tag">近地铁</span>
+            <span class="tag">南向</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Record Card 2 — 感兴趣 -->
+      <div class="record-card" onclick="location.href='record-detail.html'">
+        <div class="scan-edge"></div>
+        <div class="record-card-cover">
+          <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&h=300&fit=crop" alt="西溪蝶园" />
+          <div class="cover-overlay"></div>
+          <div class="status-badge interested"><span class="dot"></span> 感兴趣</div>
+        </div>
+        <div class="record-card-body">
+          <h3>西溪蝶园 · 2室2厅1卫</h3>
+          <div class="community">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            杭州市余杭区五常街道
+          </div>
+          <div class="record-info-grid">
+            <div class="info-item">
+              <span class="info-label">面积</span>
+              <span class="info-value">76<span class="unit">㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">价格</span>
+              <span class="info-value price">285<span class="unit">万</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">单价</span>
+              <span class="info-value price">37,500<span class="unit">元/㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">看房</span>
+              <span class="info-value" style="font-size:13px;">05-27</span>
+            </div>
+          </div>
+          <div class="record-tags">
+            <span class="tag commute">🚗 公司 22min</span>
+            <span class="tag commute">🚶 健身房 8min</span>
+            <span class="tag">精装</span>
+            <span class="tag">南北通</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Record Card 3 — 待定 -->
+      <div class="record-card">
+        <div class="scan-edge"></div>
+        <div class="record-card-cover">
+          <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=600&h=300&fit=crop" alt="保利东湾" />
+          <div class="cover-overlay"></div>
+          <div class="status-badge pending"><span class="dot"></span> 待定</div>
+        </div>
+        <div class="record-card-body">
+          <h3>保利东湾 · 3室2厅2卫</h3>
+          <div class="community">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            杭州市萧山区钱江世纪城
+          </div>
+          <div class="record-info-grid">
+            <div class="info-item">
+              <span class="info-label">面积</span>
+              <span class="info-value">118<span class="unit">㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">价格</span>
+              <span class="info-value price">450<span class="unit">万</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">单价</span>
+              <span class="info-value price">38,136<span class="unit">元/㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">看房</span>
+              <span class="info-value" style="font-size:13px;">05-25</span>
+            </div>
+          </div>
+          <div class="record-tags">
+            <span class="tag commute">🚗 公司 40min</span>
+            <span class="tag">豪装</span>
+            <span class="tag">江景</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Record Card 4 — 待定 -->
+      <div class="record-card">
+        <div class="scan-edge"></div>
+        <div class="record-card-cover">
+          <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=300&fit=crop" alt="金地自在城" />
+          <div class="cover-overlay"></div>
+          <div class="status-badge pending"><span class="dot"></span> 待定</div>
+        </div>
+        <div class="record-card-body">
+          <h3>金地自在城 · 2室1厅1卫</h3>
+          <div class="community">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            杭州市拱墅区祥符街道
+          </div>
+          <div class="record-info-grid">
+            <div class="info-item">
+              <span class="info-label">面积</span>
+              <span class="info-value">68<span class="unit">㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">价格</span>
+              <span class="info-value price">238<span class="unit">万</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">单价</span>
+              <span class="info-value price">35,000<span class="unit">元/㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">看房</span>
+              <span class="info-value" style="font-size:13px;">05-24</span>
+            </div>
+          </div>
+          <div class="record-tags">
+            <span class="tag commute">🚗 公司 28min</span>
+            <span class="tag">简装</span>
+            <span class="tag">临街</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Record Card 5 — 待定 -->
+      <div class="record-card">
+        <div class="scan-edge"></div>
+        <div class="record-card-cover">
+          <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&h=300&fit=crop" alt="龙湖春江郦城" />
+          <div class="cover-overlay"></div>
+          <div class="status-badge pending"><span class="dot"></span> 待定</div>
+        </div>
+        <div class="record-card-body">
+          <h3>龙湖春江郦城 · 4室2厅2卫</h3>
+          <div class="community">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            杭州市滨江区长河街道
+          </div>
+          <div class="record-info-grid">
+            <div class="info-item">
+              <span class="info-label">面积</span>
+              <span class="info-value">139<span class="unit">㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">价格</span>
+              <span class="info-value price">580<span class="unit">万</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">单价</span>
+              <span class="info-value price">41,726<span class="unit">元/㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">看房</span>
+              <span class="info-value" style="font-size:13px;">05-22</span>
+            </div>
+          </div>
+          <div class="record-tags">
+            <span class="tag commute">🚗 公司 18min</span>
+            <span class="tag">精装</span>
+            <span class="tag">双阳台</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Record Card 6 — 已淘汰 -->
+      <div class="record-card" style="opacity:0.65;">
+        <div class="scan-edge"></div>
+        <div class="record-card-cover">
+          <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=300&fit=crop" alt="远洋公馆" style="filter:grayscale(0.6);" />
+          <div class="cover-overlay"></div>
+          <div class="status-badge eliminated"><span class="dot"></span> 已淘汰</div>
+        </div>
+        <div class="record-card-body">
+          <h3>远洋公馆 · 2室1厅1卫</h3>
+          <div class="community">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            杭州市江干区丁兰街道
+          </div>
+          <div class="record-info-grid">
+            <div class="info-item">
+              <span class="info-label">面积</span>
+              <span class="info-value">72<span class="unit">㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">价格</span>
+              <span class="info-value price">198<span class="unit">万</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">单价</span>
+              <span class="info-value price">27,500<span class="unit">元/㎡</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">看房</span>
+              <span class="info-value" style="font-size:13px;">05-20</span>
+            </div>
+          </div>
+          <div class="record-tags">
+            <span class="tag commute">🚗 公司 55min</span>
+            <span class="tag">毛坯</span>
+            <span class="tag">偏僻</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ Create Record Drawer ═══════════════ -->
+  <div class="drawer-overlay" id="createDrawer" onclick="if(event.target===this)closeDrawer()">
+    <div class="drawer-panel">
+      <div class="drawer-light-bar"></div>
+      <div class="drawer-header">
+        <h3>新建看房记录</h3>
+        <button class="drawer-close" onclick="closeDrawer()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Steps -->
+      <div class="steps-bar">
+        <div class="step-item active">
+          <div class="step-dot">1</div>
+          <span class="step-label">基本信息</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item">
+          <div class="step-dot">2</div>
+          <span class="step-label">照片</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item">
+          <div class="step-dot">3</div>
+          <span class="step-label">评分标签</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item">
+          <div class="step-dot">4</div>
+          <span class="step-label">通勤</span>
+        </div>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Step 1: Basic Info -->
+        <div class="form-group">
+          <label class="form-label">小区名称 <span class="required">*</span></label>
+          <input type="text" class="hstack-input" placeholder="输入小区名称" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">详细地址</label>
+          <div class="mini-map-placeholder">📍 点击选择地址（地图选点）</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">户型 <span class="required">*</span></label>
+            <input type="text" class="hstack-input" placeholder="如 3室1厅1卫" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">朝向</label>
+            <select class="hstack-input"><option>南</option><option>南北</option><option>东</option><option>西</option><option>东南</option><option>西南</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">面积 <span class="required">*</span></label>
+            <input type="number" class="hstack-input" placeholder="㎡" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">总价 <span class="required">*</span></label>
+            <input type="number" class="hstack-input" placeholder="万元" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">楼层</label>
+            <input type="text" class="hstack-input" placeholder="如 12/18" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">装修</label>
+            <select class="hstack-input"><option>精装</option><option>简装</option><option>毛坯</option><option>豪装</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeDrawer()">取消</button>
+        <button class="btn btn-primary btn-sm">下一步 →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
+      const svg = document.querySelector('.theme-toggle svg');
+      if (html.getAttribute('data-theme') === 'dark') {
+        svg.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+      } else {
+        svg.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+      }
+    }
+
+    function openDrawer() { document.getElementById('createDrawer').classList.add('open'); }
+    function closeDrawer() { document.getElementById('createDrawer').classList.remove('open'); }
+
+    function selectFilter(el) {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // ═══════════════ Particle System ═══════════════
+    const pc = document.getElementById('particle-canvas');
+    const pctx = pc.getContext('2d');
+    const fc = document.getElementById('flow-canvas');
+    const fctx = fc.getContext('2d');
+    function resizeCanvases() { pc.width = fc.width = window.innerWidth; pc.height = fc.height = window.innerHeight; }
+    resizeCanvases(); window.addEventListener('resize', resizeCanvases);
+
+    const particles = [];
+    for (let i = 0; i < 50; i++) {
+      particles.push({
+        x: Math.random() * pc.width, y: Math.random() * pc.height,
+        size: 1.5 + Math.random() * 2.5, speedX: (Math.random() - 0.5) * 0.3, speedY: (Math.random() - 0.5) * 0.3,
+        hue: [250, 190, 340][Math.floor(Math.random() * 3)], phase: Math.random() * Math.PI * 2, breathSpeed: 0.01 + Math.random() * 0.02
+      });
+    }
+    let mouseX = -1000, mouseY = -1000;
+    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+    function animateParticles() {
+      pctx.clearRect(0, 0, pc.width, pc.height);
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      particles.forEach(p => {
+        p.phase += p.breathSpeed;
+        const alpha = (isDark ? 0.6 : 0.3) * (0.5 + 0.5 * Math.sin(p.phase));
+        const dx = p.x - mouseX, dy = p.y - mouseY, dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) { p.x += dx * 0.003; p.y += dy * 0.003; }
+        p.x += p.speedX; p.y += p.speedY;
+        if (p.x < 0) p.x = pc.width; if (p.x > pc.width) p.x = 0;
+        if (p.y < 0) p.y = pc.height; if (p.y > pc.height) p.y = 0;
+        pctx.beginPath(); pctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        pctx.fillStyle = `hsla(${p.hue},${isDark ? '80' : '70'}%,${isDark ? '70' : '55'}%,${alpha})`;
+        pctx.fill();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    const flowLines = [];
+    for (let i = 0; i < 4; i++) {
+      const pts = [], numPts = 6 + Math.floor(Math.random() * 4);
+      for (let j = 0; j < numPts; j++) pts.push({ x: Math.random() * fc.width, y: Math.random() * fc.height });
+      flowLines.push({ points: pts, progress: Math.random(), speed: 0.0003 + Math.random() * 0.0005, hue: Math.random() < 0.6 ? 250 : 190, width: 1 + Math.random() * 2 });
+    }
+    function animateFlows() {
+      fctx.clearRect(0, 0, fc.width, fc.height);
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      flowLines.forEach(fl => {
+        fl.progress += fl.speed; if (fl.progress > 1) fl.progress = 0;
+        const idx = fl.progress * (fl.points.length - 1), i = Math.floor(idx), t = idx - i;
+        const p1 = fl.points[Math.min(i, fl.points.length - 1)], p2 = fl.points[Math.min(i + 1, fl.points.length - 1)];
+        const gx = p1.x + (p2.x - p1.x) * t, gy = p1.y + (p2.y - p1.y) * t;
+        fctx.beginPath(); fctx.moveTo(fl.points[0].x, fl.points[0].y);
+        for (let k = 1; k < fl.points.length; k++) fctx.lineTo(fl.points[k].x, fl.points[k].y);
+        fctx.strokeStyle = `hsla(${fl.hue},70%,60%,${isDark ? 0.08 : 0.04})`; fctx.lineWidth = fl.width; fctx.stroke();
+        const dotAlpha = isDark ? 0.5 : 0.25;
+        const grad = fctx.createRadialGradient(gx, gy, 0, gx, gy, 20);
+        grad.addColorStop(0, `hsla(${fl.hue},70%,60%,${dotAlpha})`); grad.addColorStop(1, `hsla(${fl.hue},70%,60%,0)`);
+        fctx.beginPath(); fctx.arc(gx, gy, 20, 0, Math.PI * 2); fctx.fillStyle = grad; fctx.fill();
+      });
+      requestAnimationFrame(animateFlows);
+    }
+    animateFlows();
+  </script>
+</body>
+</html>
